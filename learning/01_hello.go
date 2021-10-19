@@ -1,6 +1,8 @@
 package learning
 
-import "fmt"
+import (
+	"fmt"
+)
 
 var who = "World"
 
