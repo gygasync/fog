@@ -9,13 +9,12 @@ func main() {
 	logger := learning.Getlogger(false)
 	defer logger.Sync()
 
-	logger.Info("Application started")
+	learning.Log("This is only visible in the file log")
+	learning.Log("Application started")
 	learning.Hello()
 
 	var quote = learning.Getquote()
 	fmt.Println(quote)
-	logger.Info(learning.Getinfo())
-	logger.Warn(learning.Getwarning())
-	logger.Error(learning.Geterror())
-	logger.Info("Exiting from application")
+	learning.Log(quote)
+	learning.Log("Exiting from application")
 }

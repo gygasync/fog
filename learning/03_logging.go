@@ -13,7 +13,7 @@ func Getinfo() string {
 }
 
 func Getwarning() string {
-	return "Tornado worning at " + time.Now().String()
+	return "Tornado warning at " + time.Now().String()
 }
 
 func Geterror() string {
