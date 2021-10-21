@@ -23,7 +23,7 @@ func LoadProperties(environment string) (Properties, error) {
 	}
 
 	if environment != "" {
-		propPath = path.Join(propPath, ".", environment)
+		propPath += "." + environment
 	}
 
 	file, err := os.Open(propPath)
