@@ -16,5 +16,9 @@ func main() {
 	var quote = learning.Getquote()
 	fmt.Println(quote)
 	learning.Log(quote)
+
+	learning.TestPageOps()
+	learning.TestHttpHandler()
+
 	learning.Log("Exiting from application")
 }
