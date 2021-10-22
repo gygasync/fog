@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="fog" id="Project-23d4" database="Sqlite" >
+	<schema name="Default" >
+		<table name="Directory" >
+			<column name="Id" type="varchar" length="36" jt="12" mandatory="y" >
+				<comment><![CDATA[Guid]]></comment>
+			</column>
+			<column name="Path" type="text" jt="-1" mandatory="y" />
+			<column name="Dateadded" type="datetime" jt="93" >
+				<defo><![CDATA[CURRENT_TIMESTAMP]]></defo>
+			</column>
+			<column name="Lastchecked" type="datetime" jt="93" />
+			<index name="Pk_directory_id" unique="PRIMARY_KEY" >
+				<column name="Id" />
+			</index>
+			<index name="Idx_Directory" unique="NORMAL" >
+				<comment><![CDATA[Guid idx]]></comment>
+				<column name="Id" />
+			</index>
+		</table>
+		<table name="File" >
+			<column name="Id" type="varchar" length="36" jt="12" mandatory="y" />
+			<column name="Path" type="text" jt="-1" />
+			<column name="Parentdirectory" type="varchar" length="36" jt="12" mandatory="y" />
+			<column name="Checksum" type="binary" length="32" jt="-2" />
+			<column name="Lastchecked" type="datetime" jt="93" />
+			<index name="Pk_File_Id" unique="PRIMARY_KEY" >
+				<column name="Id" />
+			</index>
+			<index name="Idx_File" unique="NORMAL" >
+				<comment><![CDATA[Guid idx]]></comment>
+				<column name="Id" />
+			</index>
+			<fk name="Fk_File_Directory" to_schema="Default" to_table="Directory" >
+				<fk_column name="Parentdirectory" pk="Id" />
+			</fk>
+		</table>
+	</schema>
+	<layout name="Default Layout" id="Layout-2df" show_relation="columns" >
+		<entity schema="Default" name="Directory" color="C1D8EE" x="48" y="48" />
+		<entity schema="Default" name="File" color="C1D8EE" x="240" y="272" />
+	</layout>
+</project>
