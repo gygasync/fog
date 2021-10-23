@@ -14,7 +14,7 @@ type Properties map[string]string
 func LoadProperties(environment string) (Properties, error) {
 	props := Properties{}
 
-	propPath, err := filepath.Abs(filepath.Dir("../"))
+	propPath, err := filepath.Abs(filepath.Dir("."))
 
 	propPath = path.Join(propPath, "go.props")
 
