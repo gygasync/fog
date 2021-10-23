@@ -2,7 +2,7 @@
 <project name="fog" id="Project-23d4" database="Sqlite" >
 	<schema name="Default" >
 		<table name="Directory" >
-			<column name="Id" type="varchar" length="36" jt="12" mandatory="y" >
+			<column name="Id" type="varchar" length="32" jt="12" mandatory="y" >
 				<comment><![CDATA[Guid]]></comment>
 			</column>
 			<column name="Path" type="text" jt="-1" mandatory="y" />
@@ -19,9 +19,9 @@
 			</index>
 		</table>
 		<table name="File" >
-			<column name="Id" type="varchar" length="36" jt="12" mandatory="y" />
+			<column name="Id" type="varchar" length="32" jt="12" mandatory="y" />
 			<column name="Path" type="text" jt="-1" />
-			<column name="Parentdirectory" type="varchar" length="36" jt="12" mandatory="y" />
+			<column name="Parentdirectory" type="varchar" length="32" jt="12" mandatory="y" />
 			<column name="Checksum" type="binary" length="32" jt="-2" />
 			<column name="Lastchecked" type="datetime" jt="93" />
 			<index name="Pk_File_Id" unique="PRIMARY_KEY" >
@@ -39,5 +39,27 @@
 	<layout name="Default Layout" id="Layout-2df" show_relation="columns" >
 		<entity schema="Default" name="Directory" color="C1D8EE" x="48" y="48" />
 		<entity schema="Default" name="File" color="C1D8EE" x="240" y="272" />
+		<script name="SQL_Editor" id="Editor-1b2a" language="SQL" >
+			<string><![CDATA[CREATE TABLE Directory ( 
+	Id                   varchar(32) NOT NULL  PRIMARY KEY  ,
+	Path                 text NOT NULL    ,
+	Dateadded            datetime  DEFAULT CURRENT_TIMESTAMP   ,
+	Lastchecked          datetime     
+ );
+
+CREATE INDEX Idx_Directory ON Directory ( Id );
+
+CREATE TABLE File ( 
+	Id                   varchar(32) NOT NULL  PRIMARY KEY  ,
+	Path                 text     ,
+	Parentdirectory      varchar(36) NOT NULL    ,
+	Checksum             binary(32)     ,
+	Lastchecked          datetime     ,
+	FOREIGN KEY ( Parentdirectory ) REFERENCES Directory( Id )  
+ );
+
+CREATE INDEX Idx_File ON File ( Id );
+]]></string>
+		</script>
 	</layout>
 </project>
