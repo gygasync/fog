@@ -18,6 +18,9 @@ type Config interface {
 }
 
 func NewDbConn(connection string, lgr *common.StdLogger) *DbConn {
+	if connection == "" {
+		return nil
+	}
 	dbc, err := open(connection, lgr)
 	if err != nil {
 		return nil
