@@ -16,13 +16,13 @@ func main() {
 		return
 	}
 
-	conn, err := db.Open(props["sqliteDbLocation"], logger)
-	if err != nil {
+	conn := db.NewDbConn(props["sqliteDbLocation"], logger)
+	if conn == nil {
 		logger.Fatal("Could not establish connection to database, Exiting...")
 		return
 	}
 
-	db.Up(conn, logger)
+	conn.Up()
 
 	logger.Info("Exiting Application...")
 }

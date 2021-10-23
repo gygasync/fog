@@ -9,25 +9,26 @@ import (
 	"github.com/golang-migrate/migrate/v4/source/file"
 )
 
-func Up(db *sql.DB, logger common.Logger) {
+func up(db *sql.DB, logger *common.StdLogger) {
+	l := *logger
 	dbDriver, err := sqlite3.WithInstance(db, &sqlite3.Config{})
 	if err != nil {
-		logger.Errorf("Instance err: %v \n", err)
+		l.Errorf("Instance err: %v \n", err)
 	}
 
 	fileSource, err := (&file.File{}).Open("file://db/migrations")
 	if err != nil {
-		logger.Errorf("opening file error: %v \n", err)
+		l.Errorf("opening file error: %v \n", err)
 	}
 
 	m, err := migrate.NewWithInstance("file", fileSource, "fog.sqlite", dbDriver)
 	if err != nil {
-		logger.Errorf("migrate error: %v \n", err)
+		l.Errorf("migrate error: %v \n", err)
 	}
 
 	if err = m.Up(); err != nil {
-		logger.Errorf("migrate up error: %v \n", err)
+		l.Errorf("migrate up error: %v \n", err)
 	}
 
-	logger.Info("Migrate up success.")
+	l.Info("Migrate up success.")
 }
