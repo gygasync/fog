@@ -30,21 +30,42 @@ type Logger interface {
 }
 
 type StdLogger struct {
-	logger *log.Logger
+	logger  *log.Logger
+	logfile *os.File
 }
 
-func NewStdLogger() *StdLogger {
-	return &StdLogger{logger: log.New(os.Stdout, "", 5)}
+func NewStdFileLogger() *StdLogger {
+	return newLogger("./logs/")
+}
+
+func NewFileLogger(path string) *StdLogger {
+	return newLogger(path)
+}
+
+func newLogger(path string) *StdLogger {
+	filename := path + "log_" + fmt.Sprintf("%d", time.Now().UnixMilli()) + ".txt"
+	lgr := log.New(os.Stdout, "", 5)
+
+	file, err := os.OpenFile(filename, os.O_APPEND|os.O_CREATE, 0666)
+	if err != nil {
+		log.Println("!!!!!!!!!!! Could not create a file log !!!!!!!!!!!")
+	}
+
+	return &StdLogger{logger: lgr, logfile: file}
+}
+
+func doLog(l *StdLogger, level Level, message string) {
+	msgToLog := fmt.Sprintf("[%s] %s %s\n", level, time.Now().String(), message)
+	l.logger.Print(msgToLog)
+	l.logfile.Write([]byte(msgToLog))
 }
 
 func logMsg(l *StdLogger, level Level, args ...interface{}) {
-	msgToLog := fmt.Sprintf("[%s] %s %s", level, time.Now().String(), fmt.Sprint(args...))
-	l.logger.Println(msgToLog)
+	doLog(l, level, fmt.Sprint(args...))
 }
 
 func logMsgf(l *StdLogger, level Level, format string, args ...interface{}) {
-	msgToLog := fmt.Sprintf("[%s] %s %s", level, time.Now().String(), fmt.Sprintf(format, args...))
-	l.logger.Println(msgToLog)
+	doLog(l, level, fmt.Sprintf(format, args...))
 }
 
 func (l *StdLogger) Info(args ...interface{}) {
