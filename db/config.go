@@ -15,6 +15,7 @@ type DbConn struct {
 
 type Config interface {
 	Up()
+	GetDB() *sql.DB
 }
 
 func NewDbConn(connection string, lgr *common.StdLogger) *DbConn {
@@ -50,4 +51,8 @@ func open(connection string, logger *common.StdLogger) (*sql.DB, error) {
 
 func (conn *DbConn) Up() {
 	up(conn.conn, conn.logger)
+}
+
+func (conn *DbConn) GetDB() *sql.DB {
+	return conn.conn
 }
