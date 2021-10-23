@@ -62,14 +62,12 @@ func (dirs *Directories) List(limit, offset uint) ([]models.Directory, error) {
 }
 
 func (dirs *Directories) Delete(id string) error {
-	query := "DELETE FROM Directory WHERE Id = '?'"
-	rows, err := dirs.db.Query(query, id)
+	query := "DELETE FROM Directory WHERE Id = ?"
+	_, err := dirs.db.Exec(query, id)
 	if err != nil {
 		dirs.logger.Error("Could not perform delete in Directory ", err)
 		return err
 	}
-
-	defer rows.Close()
 
 	return nil
 }

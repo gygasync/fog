@@ -54,6 +54,10 @@ func main() {
 	logger.Info("#### PERFORM DELETE ####")
 	dirList, err = directories.List(100, 0)
 
+	if err != nil {
+		logger.Error(err)
+	}
+
 	for _, dir := range dirList {
 		logger.Infof("%#v", dir)
 	}
