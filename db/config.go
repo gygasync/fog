@@ -3,23 +3,26 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"fog/common"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func Open(location string) *sql.DB {
-	db, err := sql.Open("sqlite3", location)
+func Open(connection string, logger common.Logger) (*sql.DB, error) {
+	db, err := sql.Open("sqlite3", connection)
 
 	if err != nil {
-		fmt.Printf("Error opening DB: %v \n", err)
+		logger.Error(fmt.Sprintf("%v", err))
+		return nil, err
 	}
 
 	err = db.Ping()
 	if err != nil {
-		fmt.Printf("Error pinging DB: %v \n", err)
+		logger.Error(fmt.Sprintf("Error pinging DB: %v \n", err))
+		return nil, err
 	}
 
-	fmt.Println("Connected to db")
+	logger.Info("Connected to SQLite db!")
 
-	return db
+	return db, nil
 }
