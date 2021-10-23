@@ -6,6 +6,8 @@ import (
 	"fog/db"
 	"fog/db/models"
 	"fog/db/repository"
+	"fog/web"
+	"net/http"
 
 	"github.com/google/uuid"
 )
@@ -47,6 +49,9 @@ func main() {
 	for _, file := range fileList {
 		logger.Infof("%#v", file)
 	}
+
+	web.New()
+	logger.Fatal(http.ListenAndServe(":8080", web.New()))
 
 	logger.Info("Exiting Application...")
 }
