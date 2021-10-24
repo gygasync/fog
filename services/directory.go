@@ -1,10 +1,13 @@
 package services
 
 import (
+	"database/sql"
 	"fmt"
 	"fog/common"
 	"fog/db/models"
 	"fog/db/repository"
+	"os"
+	"path/filepath"
 
 	"github.com/google/uuid"
 )
@@ -35,6 +38,29 @@ func (s *DirectoryService) List(limit, offset uint) []models.Directory {
 }
 
 func (s *DirectoryService) Add(directory models.Directory) error {
-	directory.Id = fmt.Sprintf("0x%x", [16]byte(uuid.New()))
-	return s.repository.Add(directory)
+	dir, err := os.Stat(directory.Path)
+	if err != nil || !dir.IsDir() {
+		s.logger.Warnf("directory %s is not valid", directory.Path)
+		return fmt.Errorf("directory %s is not valid", directory.Path)
+	}
+
+	directory.Path, err = filepath.Abs(directory.Path)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.repository.FindOne("Path", directory.Path)
+
+	if err == sql.ErrNoRows {
+		directory.Id = fmt.Sprintf("0x%x", [16]byte(uuid.New()))
+		return s.repository.Add(directory)
+	} else {
+		if err == nil {
+			s.logger.Warnf("path %s already exists", directory.Path)
+			return err
+		}
+		s.logger.Warnf("unable to add path %s %s", directory.Path, err.Error())
+		return err
+
+	}
 }

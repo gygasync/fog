@@ -1,17 +1,13 @@
 package main
 
 import (
-	"fmt"
 	"fog/common"
 	"fog/db"
-	"fog/db/models"
 	"fog/db/repository"
 	"fog/services"
 	"fog/web"
 	"fog/web/routes"
 	"net/http"
-
-	"github.com/google/uuid"
 )
 
 func main() {
@@ -33,8 +29,8 @@ func main() {
 
 	conn.Up()
 
-	directories := repository.NewDirectorySet(conn, logger)
-	directories.Add(models.Directory{Id: fmt.Sprintf("0x%x", [16]byte(uuid.New())), Path: "/usr/test/"})
+	// directories := repository.NewDirectorySet(conn, logger)
+	// directories.Add(models.Directory{Id: fmt.Sprintf("0x%x", [16]byte(uuid.New())), Path: "/usr/test/"})
 	// files := repository.NewFileSet(conn, logger)
 
 	// dirList, err := directories.List(100, 0)
