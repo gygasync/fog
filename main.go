@@ -7,6 +7,7 @@ import (
 	"fog/db/models"
 	"fog/db/repository"
 	"fog/web"
+	"fog/web/routes"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -50,8 +51,18 @@ func main() {
 		logger.Infof("%#v", file)
 	}
 
-	web.New()
-	logger.Fatal(http.ListenAndServe(":8080", web.New()))
+	tplEngine := routes.NewTplEngine(logger)
+
+	tplEngine.RegisterTemplate("./web/static/templates/main.template.html", "main")
+	tplEngine.RegisterTemplate("./web/static/templates/body.template.html", "body")
+	tplEngine.RegisterTemplate("./web/static/templates/header.template.html", "header")
+
+	router := web.NewTplRouter(logger, tplEngine)
+
+	indexRoute := routes.NewIndexRoute(logger, tplEngine)
+	router.RegisterRoute("/", web.GET, indexRoute)
+
+	logger.Fatal(http.ListenAndServe(":8080", router.Router()))
 
 	logger.Info("Exiting Application...")
 }
