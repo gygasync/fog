@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"fog/common"
 	"html/template"
 	"net/http"
 )
@@ -22,9 +23,32 @@ type Header struct {
 }
 
 type Body struct {
-	Content template.HTML
+	Content []template.HTML
 }
 
-func Render(w http.ResponseWriter) {
-	registeredTemplates.ExecuteTemplate(w, "main", &Page{Header: Header{Title: "FOG!"}, Body: Body{Content: template.HTML("<h1>Welcome</h1>")}})
+type TplEngine interface {
+	RegisterTemplate(templatePath string) error
+	Render(w http.ResponseWriter, page *Page)
+}
+
+type TemplatingEngine struct {
+	logger              common.Logger
+	registeredTemplates *template.Template
+}
+
+func NewTplEngine(logger common.Logger) *TemplatingEngine {
+	return &TemplatingEngine{logger: logger}
+}
+
+func Render(w http.ResponseWriter, page *Page) {
+	registeredTemplates.ExecuteTemplate(w, "main", page)
+}
+
+func (t *TemplatingEngine) RegisterTemplate(templatePath string) error {
+	newTpl, err := t.registeredTemplates.ParseFiles(templatePath)
+	if err == nil {
+		t.registeredTemplates = newTpl
+	}
+
+	return err
 }
