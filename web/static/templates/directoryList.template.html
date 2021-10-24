@@ -1,0 +1,18 @@
+{{define "directoryList"}}
+<table class="table is-hoverable is-striped">
+    <thead>
+        <th>Path</th>
+        <th>Id</th>
+        <th>Date added</th>
+    </thead>
+    <tbody>
+    {{range .}}
+    <tr>
+        <th>{{.Path}}</th>
+        <td>{{.Id}}</td>
+        <td>{{.Dateadded}}</td>
+    </tr>
+    {{end}}
+</tbody>
+</table>
+{{end}}
