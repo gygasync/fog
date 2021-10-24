@@ -6,6 +6,8 @@ import (
 	"fog/common"
 	"fog/db"
 	"fog/db/models"
+
+	"github.com/google/uuid"
 )
 
 type DirectoryRepository interface {
@@ -27,6 +29,7 @@ func NewDirectorySet(db db.DbConfig, logger common.Logger) *Directories {
 }
 
 func (dirs *Directories) Add(directory models.Directory) error {
+	directory.Id = fmt.Sprintf("0x%x", [16]byte(uuid.New()))
 	query := "INSERT INTO Directory (Id, Path) VALUES (?, ?)"
 	_, err := dirs.db.GetDB().Exec(query, directory.Id, directory.Path, directory.Dateadded, directory.Lastchecked)
 

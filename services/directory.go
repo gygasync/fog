@@ -6,10 +6,9 @@ import (
 	"fog/common"
 	"fog/db/models"
 	"fog/db/repository"
+	"io/ioutil"
 	"os"
 	"path/filepath"
-
-	"github.com/google/uuid"
 )
 
 type IDirectoryService interface {
@@ -18,12 +17,13 @@ type IDirectoryService interface {
 }
 
 type DirectoryService struct {
-	logger     common.Logger
-	repository repository.DirectoryRepository
+	logger      common.Logger
+	repository  repository.DirectoryRepository
+	fileService IFileService
 }
 
-func NewDirectoryService(logger common.Logger, repository repository.DirectoryRepository) *DirectoryService {
-	return &DirectoryService{logger: logger, repository: repository}
+func NewDirectoryService(logger common.Logger, repository repository.DirectoryRepository, fileService IFileService) *DirectoryService {
+	return &DirectoryService{logger: logger, repository: repository, fileService: fileService}
 }
 
 func (s *DirectoryService) List(limit, offset uint) []models.Directory {
@@ -51,16 +51,42 @@ func (s *DirectoryService) Add(directory models.Directory) error {
 
 	_, err = s.repository.FindOne("Path", directory.Path)
 
-	if err == sql.ErrNoRows {
-		directory.Id = fmt.Sprintf("0x%x", [16]byte(uuid.New()))
-		return s.repository.Add(directory)
-	} else {
+	if err != sql.ErrNoRows {
 		if err == nil {
 			s.logger.Warnf("path %s already exists", directory.Path)
 			return err
 		}
 		s.logger.Warnf("unable to add path %s %s", directory.Path, err.Error())
 		return err
-
 	}
+	err = s.repository.Add(directory)
+
+	if err != nil {
+		return err
+	}
+
+	err = s.workDirectory(directory)
+	if err != nil {
+		s.logger.Error("error traversing directory", err)
+	}
+
+	return nil
+}
+
+func (s *DirectoryService) workDirectory(directory models.Directory) error {
+	files, err := ioutil.ReadDir(directory.Path)
+	if err != nil {
+		return err
+	}
+
+	for _, f := range files {
+		path := filepath.Join(directory.Path, f.Name())
+		if f.IsDir() {
+			s.Add(models.Directory{Path: path})
+		} else {
+			s.fileService.Add(models.File{Path: path, ParentDirectory: directory.Id})
+		}
+	}
+
+	return nil
 }

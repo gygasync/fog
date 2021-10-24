@@ -59,8 +59,11 @@ func main() {
 
 	indexRoute := routes.NewIndexRoute(logger, tplEngine)
 
+	fileRepository := repository.NewFileRepository(logger, conn)
+	fileService := services.NewFileService(logger, fileRepository)
+
 	directoryRepository := repository.NewDirectorySet(conn, logger)
-	directoryService := services.NewDirectoryService(logger, directoryRepository)
+	directoryService := services.NewDirectoryService(logger, directoryRepository, fileService)
 
 	dirRoute := routes.NewDirRoute(logger, tplEngine, directoryService)
 
