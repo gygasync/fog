@@ -24,6 +24,7 @@
 			<column name="Parentdirectory" type="varbinary" length="16" jt="-3" mandatory="y" />
 			<column name="Checksum" type="binary" length="32" jt="-2" />
 			<column name="Lastchecked" type="datetime" jt="93" />
+			<column name="MimeType" type="varchar" length="100" jt="12" />
 			<index name="Pk_File_Id" unique="PRIMARY_KEY" >
 				<column name="Id" />
 			</index>
@@ -58,8 +59,7 @@ CREATE TABLE File (
 	FOREIGN KEY ( Parentdirectory ) REFERENCES Directory( Id )  
  );
 
-CREATE INDEX Idx_File ON File ( Id );
-]]></string>
+CREATE INDEX Idx_File ON File ( Id );]]></string>
 		</script>
 		<script name="SQL_Editor_001" id="Editor-23e2" language="SQL" >
 			<string><![CDATA[CREATE TABLE Directory ( 
@@ -80,8 +80,7 @@ CREATE TABLE File (
 	FOREIGN KEY ( Parentdirectory ) REFERENCES Directory( Id )  
  );
 
-CREATE INDEX Idx_File ON File ( Id );
-]]></string>
+CREATE INDEX Idx_File ON File ( Id );]]></string>
 		</script>
 		<script name="SQL_Editor_002" id="Editor-3d1" language="SQL" >
 			<string><![CDATA[CREATE TABLE File ( 
@@ -92,8 +91,7 @@ CREATE INDEX Idx_File ON File ( Id );
 	Lastchecked          datetime     
  );
 
-CREATE INDEX Idx_File ON File ( Id );
-]]></string>
+CREATE INDEX Idx_File ON File ( Id );]]></string>
 		</script>
 		<script name="SQL_Editor_003" id="Editor-c01" language="SQL" >
 			<string><![CDATA[CREATE TABLE Directory ( 
@@ -114,8 +112,7 @@ CREATE TABLE File (
 	FOREIGN KEY ( Parentdirectory ) REFERENCES Directory( Id )  
  );
 
-CREATE INDEX Idx_File ON File ( Id );
-]]></string>
+CREATE INDEX Idx_File ON File ( Id );]]></string>
 		</script>
 	</layout>
 </project>

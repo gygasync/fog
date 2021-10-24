@@ -13,6 +13,7 @@ CREATE TABLE File (
 	Parentdirectory      varbinary(16) NOT NULL    ,
 	Checksum             binary(32)     ,
 	Lastchecked          datetime     ,
+	MimeType             varchar(100)     ,
 	FOREIGN KEY ( Parentdirectory ) REFERENCES Directory( Id )  
  );
 

@@ -8,4 +8,5 @@ type File struct {
 	ParentDirectory string
 	Checksum        sql.NullString
 	Lastchecked     sql.NullString
+	MimeType        sql.NullString
 }
