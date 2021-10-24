@@ -27,9 +27,9 @@ func NewTplRouter(logger common.Logger, tplEngine routes.TplEngine) *TplRouter {
 func (r *TplRouter) RegisterRoute(path string, method Method, route routes.Route) error {
 	switch method {
 	case GET:
-		r.router.GET(path, route.Handle)
+		r.router.GET(path, route.HandleGet)
 	case POST:
-		r.router.POST(path, route.Handle)
+		r.router.POST(path, route.HandlePost)
 	default:
 		return fmt.Errorf("failed registering route %s with method %s", path, method)
 	}

@@ -33,7 +33,7 @@ func (i *DirRoute) generateComponent(dirs []models.Directory) string {
 	return buf.String()
 }
 
-func (i *DirRoute) Handle(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (i *DirRoute) HandleGet(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	data := i.service.List(100, 0)
 	var bodyContent []template.HTML
 	component := i.generateComponent(data)
@@ -41,4 +41,12 @@ func (i *DirRoute) Handle(w http.ResponseWriter, r *http.Request, _ httprouter.P
 
 	page := Page{Header: Header{Title: "Directories"}, Body: Body{Content: bodyContent}}
 	i.tplEngine.Render(w, "main", &page)
+}
+
+func (i *DirRoute) HandlePost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	path := r.FormValue("path")
+	if path != "" {
+		i.service.Add(models.Directory{Path: path})
+		http.Redirect(w, r, "dir", http.StatusFound)
+	}
 }

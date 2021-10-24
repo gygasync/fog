@@ -1,13 +1,17 @@
 package services
 
 import (
+	"fmt"
 	"fog/common"
 	"fog/db/models"
 	"fog/db/repository"
+
+	"github.com/google/uuid"
 )
 
 type IDirectoryService interface {
 	List(limit, offset uint) []models.Directory
+	Add(directory models.Directory) error
 }
 
 type DirectoryService struct {
@@ -28,4 +32,9 @@ func (s *DirectoryService) List(limit, offset uint) []models.Directory {
 	}
 
 	return result
+}
+
+func (s *DirectoryService) Add(directory models.Directory) error {
+	directory.Id = fmt.Sprintf("0x%x", [16]byte(uuid.New()))
+	return s.repository.Add(directory)
 }

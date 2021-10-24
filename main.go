@@ -70,6 +70,7 @@ func main() {
 
 	router.RegisterRoute("/", web.GET, indexRoute)
 	router.RegisterRoute("/dir", web.GET, dirRoute)
+	router.RegisterRoute("/dir", web.POST, dirRoute)
 
 	logger.Fatal(http.ListenAndServe(":8080", router.Router()))
 
