@@ -6,6 +6,7 @@ import (
 	"fog/db"
 	"fog/db/models"
 	"fog/db/repository"
+	"fog/services"
 	"fog/web"
 	"fog/web/routes"
 	"net/http"
@@ -33,23 +34,24 @@ func main() {
 	conn.Up()
 
 	directories := repository.NewDirectorySet(conn, logger)
-	files := repository.NewFileSet(conn, logger)
+	directories.Add(models.Directory{Id: fmt.Sprintf("0x%x", [16]byte(uuid.New())), Path: "/usr/test/"})
+	// files := repository.NewFileSet(conn, logger)
 
-	dirList, err := directories.List(100, 0)
+	// dirList, err := directories.List(100, 0)
 
-	if err != nil {
-		logger.Error(err)
-	}
-	someDir := dirList[0]
+	// if err != nil {
+	// 	logger.Error(err)
+	// }
+	// someDir := dirList[0]
 
-	someFile := models.File{Id: fmt.Sprintf("0x%x", [16]byte(uuid.New())), Path: "a.exe", ParentDirectory: someDir.Id}
-	files.Add(someFile)
+	// someFile := models.File{Id: fmt.Sprintf("0x%x", [16]byte(uuid.New())), Path: "a.exe", ParentDirectory: someDir.Id}
+	// files.Add(someFile)
 
-	fileList, err := files.List(100, 0)
+	// fileList, err := files.List(100, 0)
 
-	for _, file := range fileList {
-		logger.Infof("%#v", file)
-	}
+	// for _, file := range fileList {
+	// 	logger.Infof("%#v", file)
+	// }
 
 	tplEngine := routes.NewTplEngine(logger)
 
@@ -60,7 +62,14 @@ func main() {
 	router := web.NewTplRouter(logger, tplEngine)
 
 	indexRoute := routes.NewIndexRoute(logger, tplEngine)
+
+	directoryRepository := repository.NewDirectorySet(conn, logger)
+	directoryService := services.NewDirectoryService(logger, directoryRepository)
+
+	dirRoute := routes.NewDirRoute(logger, tplEngine, directoryService)
+
 	router.RegisterRoute("/", web.GET, indexRoute)
+	router.RegisterRoute("/dir", web.GET, dirRoute)
 
 	logger.Fatal(http.ListenAndServe(":8080", router.Router()))
 
