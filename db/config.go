@@ -10,10 +10,10 @@ import (
 
 type DbConn struct {
 	conn   *sql.DB
-	logger *common.StdLogger
+	logger common.Logger
 }
 
-type Config interface {
+type DbConfig interface {
 	Up()
 	GetDB() *sql.DB
 }
@@ -50,7 +50,7 @@ func open(connection string, logger *common.StdLogger) (*sql.DB, error) {
 }
 
 func (conn *DbConn) Up() {
-	up(conn.conn, conn.logger)
+	up(conn, conn.logger)
 }
 
 func (conn *DbConn) GetDB() *sql.DB {

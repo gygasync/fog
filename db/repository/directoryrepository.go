@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"database/sql"
 	"fog/common"
+	"fog/db"
 	"fog/db/models"
 )
 
@@ -14,17 +14,17 @@ type DirectoryRepository interface {
 }
 
 type Directories struct {
-	db     *sql.DB
-	logger *common.StdLogger
+	db     db.DbConfig
+	logger common.Logger
 }
 
-func NewDirectorySet(db *sql.DB, logger *common.StdLogger) *Directories {
+func NewDirectorySet(db db.DbConfig, logger common.Logger) *Directories {
 	return &Directories{db: db, logger: logger}
 }
 
 func (dirs *Directories) Add(directory models.Directory) error {
 	query := "INSERT INTO Directory (Id, Path) VALUES (?, ?)"
-	_, err := dirs.db.Exec(query, directory.Id, directory.Path, directory.Dateadded, directory.Lastchecked)
+	_, err := dirs.db.GetDB().Exec(query, directory.Id, directory.Path, directory.Dateadded, directory.Lastchecked)
 
 	return err
 }
@@ -32,7 +32,7 @@ func (dirs *Directories) Add(directory models.Directory) error {
 func (dirs *Directories) Get(id string) (models.Directory, error) {
 	var dir models.Directory
 	query := "SELECT * FROM Directory WHERE Id = ?"
-	row := dirs.db.QueryRow(query, id)
+	row := dirs.db.GetDB().QueryRow(query, id)
 	err := row.Scan(&dir.Id, &dir.Path, &dir.Dateadded, &dir.Lastchecked)
 
 	return dir, err
@@ -41,7 +41,7 @@ func (dirs *Directories) Get(id string) (models.Directory, error) {
 func (dirs *Directories) List(limit, offset uint) ([]models.Directory, error) {
 	var result []models.Directory
 	query := "SELECT * FROM Directory ORDER BY Id LIMIT ? OFFSET ?"
-	rows, err := dirs.db.Query(query, limit, offset)
+	rows, err := dirs.db.GetDB().Query(query, limit, offset)
 	if err != nil {
 		dirs.logger.Error("Could not query the db ", err)
 		return nil, err
@@ -63,7 +63,7 @@ func (dirs *Directories) List(limit, offset uint) ([]models.Directory, error) {
 
 func (dirs *Directories) Delete(id string) error {
 	query := "DELETE FROM Directory WHERE Id = ?"
-	_, err := dirs.db.Exec(query, id)
+	_, err := dirs.db.GetDB().Exec(query, id)
 	if err != nil {
 		dirs.logger.Error("Could not perform delete in Directory ", err)
 		return err

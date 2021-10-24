@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"database/sql"
 	"fog/common"
+	"fog/db"
 	"fog/db/models"
 )
 
@@ -14,17 +14,17 @@ type FileRepository interface {
 }
 
 type Files struct {
-	db     *sql.DB
-	logger *common.StdLogger
+	db     db.DbConfig
+	logger common.Logger
 }
 
-func NewFileSet(db *sql.DB, logger *common.StdLogger) *Files {
+func NewFileSet(db db.DbConfig, logger common.Logger) *Files {
 	return &Files{db: db, logger: logger}
 }
 
 func (dirs *Files) Add(file models.File) error {
 	query := "INSERT INTO File (Id, Path, ParentDirectory) VALUES (?, ?, ?)"
-	_, err := dirs.db.Exec(query, file.Id, file.Path, file.ParentDirectory)
+	_, err := dirs.db.GetDB().Exec(query, file.Id, file.Path, file.ParentDirectory)
 
 	return err
 }
@@ -32,7 +32,7 @@ func (dirs *Files) Add(file models.File) error {
 func (files *Files) Get(id string) (models.File, error) {
 	var file models.File
 	query := "SELECT * FROM File WHERE Id = ?"
-	row := files.db.QueryRow(query, id)
+	row := files.db.GetDB().QueryRow(query, id)
 	err := row.Scan(&file.Id, &file.Path, &file.ParentDirectory, &file.Checksum, &file.Lastchecked)
 
 	return file, err
@@ -41,7 +41,7 @@ func (files *Files) Get(id string) (models.File, error) {
 func (files *Files) List(limit, offset uint) ([]models.File, error) {
 	var result []models.File
 	query := "SELECT * FROM File ORDER BY Id LIMIT ? OFFSET ?"
-	rows, err := files.db.Query(query, limit, offset)
+	rows, err := files.db.GetDB().Query(query, limit, offset)
 	if err != nil {
 		files.logger.Error("Could not query the db ", err)
 		return nil, err
@@ -63,7 +63,7 @@ func (files *Files) List(limit, offset uint) ([]models.File, error) {
 
 func (files *Files) Delete(id string) error {
 	query := "DELETE FROM File WHERE Id = ?"
-	_, err := files.db.Exec(query, id)
+	_, err := files.db.GetDB().Exec(query, id)
 	if err != nil {
 		files.logger.Error("Could not perform delete in Directory ", err)
 		return err

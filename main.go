@@ -31,8 +31,8 @@ func main() {
 
 	conn.Up()
 
-	directories := repository.NewDirectorySet(conn.GetDB(), logger)
-	files := repository.NewFileSet(conn.GetDB(), logger)
+	directories := repository.NewDirectorySet(conn, logger)
+	files := repository.NewFileSet(conn, logger)
 
 	dirList, err := directories.List(100, 0)
 
