@@ -1,0 +1,28 @@
+{{define "fileList"}}
+<table class="table is-hoverable is-striped">
+    <thead>
+        <th>Path</th>
+        <th>Id</th>
+        <th>Date added</th>
+        <th>MIME</th>
+    </thead>
+    <tbody>
+    {{range .Dirs}}
+    <tr>
+        <th>{{.Path}}</th>
+        <td>{{.Id}}</td>
+        <td>{{.Dateadded}}</td>
+        <td></td>
+    </tr>
+    {{end}}
+    {{range .Files}}
+    <tr>
+        <th>{{.Path}}</th>
+        <td>{{.Id}}</td>
+        <td></td>
+        <td>{{.MimeType.String}}</td>
+    </tr>
+    {{end}}
+</tbody>
+</table>
+{{end}}

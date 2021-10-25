@@ -16,6 +16,7 @@ import (
 type IFileService interface {
 	Add(file models.File) error
 	List(limit, offset uint) []models.File
+	GetFilesInDir(dir *models.Directory) ([]models.File, error)
 }
 type FileService struct {
 	logger     common.Logger
@@ -88,4 +89,8 @@ func (s *FileService) getMimeType(file models.File) sql.NullString {
 	}
 
 	return sql.NullString{String: kind.MIME.Value, Valid: true}
+}
+
+func (s *FileService) GetFilesInDir(dir *models.Directory) ([]models.File, error) {
+	return s.repository.FindMany("ParentDirectory", dir.Id)
 }

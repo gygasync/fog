@@ -6,6 +6,7 @@ import (
 	"fog/common"
 	"fog/db/models"
 	"fog/db/repository"
+	"fog/web/viewmodels"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -14,6 +15,7 @@ import (
 type IDirectoryService interface {
 	List(limit, offset uint) []models.Directory
 	Add(directory models.Directory) error
+	GetChildren(id string) (*viewmodels.FilesInDirs, error)
 }
 
 type DirectoryService struct {
@@ -89,4 +91,21 @@ func (s *DirectoryService) workDirectory(directory *models.Directory) error {
 	}
 
 	return nil
+}
+
+func (s *DirectoryService) GetChildren(id string) (*viewmodels.FilesInDirs, error) {
+	parent, err := s.repository.Get(id)
+	if err != nil {
+		return nil, err
+	}
+
+	files, err := s.fileService.GetFilesInDir(parent)
+	if err != nil {
+		return nil, err
+	}
+
+	var result viewmodels.FilesInDirs
+	result.Files = files
+
+	return &result, nil
 }
