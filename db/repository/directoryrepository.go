@@ -15,7 +15,7 @@ type DirectoryRepository interface {
 	Get(id string) (*models.Directory, error)
 	Delete(id string) error
 	List(limit, offset uint) ([]models.Directory, error)
-	FindOne(column string, value interface{}) (models.Directory, error)
+	FindOne(column string, value interface{}) (*models.Directory, error)
 	FindMany(column string, value interface{}) ([]models.Directory, error)
 }
 
@@ -87,13 +87,17 @@ func (dirs *Directories) Delete(id string) error {
 	return nil
 }
 
-func (dirs *Directories) FindOne(column string, value interface{}) (models.Directory, error) {
+func (dirs *Directories) FindOne(column string, value interface{}) (*models.Directory, error) {
 	var dir models.Directory
 	query := fmt.Sprintf("SELECT * FROM Directory WHERE %s = ? LIMIT 1", column)
 	row := dirs.db.GetDB().QueryRow(query, value)
 	err := row.Scan(&dir.Id, &dir.Path, &dir.Dateadded, &dir.Lastchecked)
 
-	return dir, err
+	if err != nil {
+		return nil, err
+	}
+
+	return &dir, nil
 }
 
 func (dirs *Directories) FindMany(column string, value interface{}) ([]models.Directory, error) {

@@ -10,11 +10,11 @@ import (
 )
 
 type FileRepository interface {
-	Add(models.File) error
-	Get(id string) (models.File, error)
+	Add(models.File) (*models.File, error)
+	Get(id string) (*models.File, error)
 	Delete(id string) error
 	List(limit, offset uint) ([]models.File, error)
-	FindOne(column string, value interface{}) (models.File, error)
+	FindOne(column string, value interface{}) (*models.File, error)
 }
 
 type Files struct {
@@ -26,21 +26,35 @@ func NewFileRepository(logger common.Logger, db db.DbConfig) *Files {
 	return &Files{db: db, logger: logger}
 }
 
-func (dirs *Files) Add(file models.File) error {
+func (files *Files) Add(file models.File) (*models.File, error) {
 	file.Id = fmt.Sprintf("0x%x", [16]byte(uuid.New()))
 	query := "INSERT INTO File (Id, Path, ParentDirectory, MimeType) VALUES (?, ?, ?, ?)"
-	_, err := dirs.db.GetDB().Exec(query, file.Id, file.Path, file.ParentDirectory, file.MimeType)
+	_, err := files.db.GetDB().Exec(query, file.Id, file.Path, file.ParentDirectory, file.MimeType)
 
-	return err
+	if err != nil {
+		return nil, err
+	}
+
+	newFile, err := files.Get(file.Id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return newFile, nil
 }
 
-func (files *Files) Get(id string) (models.File, error) {
+func (files *Files) Get(id string) (*models.File, error) {
 	var file models.File
 	query := "SELECT * FROM File WHERE Id = ?"
 	row := files.db.GetDB().QueryRow(query, id)
 	err := row.Scan(&file.Id, &file.Path, &file.ParentDirectory, &file.Checksum, &file.Lastchecked, &file.MimeType)
 
-	return file, err
+	if err != nil {
+		return nil, err
+	}
+
+	return &file, nil
 }
 
 func (files *Files) List(limit, offset uint) ([]models.File, error) {
@@ -77,11 +91,15 @@ func (files *Files) Delete(id string) error {
 	return nil
 }
 
-func (files *Files) FindOne(column string, value interface{}) (models.File, error) {
+func (files *Files) FindOne(column string, value interface{}) (*models.File, error) {
 	var file models.File
 	query := fmt.Sprintf("SELECT * FROM File WHERE %s = ? LIMIT 1", column)
 	row := files.db.GetDB().QueryRow(query, value)
 	err := row.Scan(&file.Id, &file.Path, &file.ParentDirectory, &file.Checksum, &file.Lastchecked, &file.MimeType)
 
-	return file, err
+	if err != nil {
+		return nil, err
+	}
+
+	return &file, nil
 }

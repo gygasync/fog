@@ -52,7 +52,7 @@ func (s *FileService) Add(file models.File) error {
 	// Do a mime type check
 	file.MimeType = s.getMimeType(file)
 
-	err = s.repository.Add(file)
+	_, err = s.repository.Add(file)
 
 	if err != nil {
 		return err
