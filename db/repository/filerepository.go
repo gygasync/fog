@@ -12,7 +12,7 @@ import (
 type FileRepository interface {
 	Add(models.File) (*models.File, error)
 	Get(id string) (*models.File, error)
-	Delete(id string) error
+	// Delete(id string) error
 	List(limit, offset uint) ([]models.File, error)
 	FindOne(column string, value interface{}) (*models.File, error)
 	FindMany(column string, value interface{}) ([]models.File, error)

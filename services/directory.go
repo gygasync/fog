@@ -16,6 +16,7 @@ type IDirectoryService interface {
 	List(limit, offset uint) []models.Directory
 	Add(directory models.Directory) error
 	GetChildren(id string) (*viewmodels.FilesInDirs, error)
+	FindChildren(directory *models.Directory) ([]models.Directory, error)
 }
 
 type DirectoryService struct {
@@ -84,7 +85,7 @@ func (s *DirectoryService) workDirectory(directory *models.Directory) error {
 	for _, f := range files {
 		path := filepath.Join(directory.Path, f.Name())
 		if f.IsDir() {
-			s.Add(models.Directory{Path: path})
+			s.Add(models.Directory{Path: path, ParentDirectory: sql.NullString{String: directory.Id, Valid: true}})
 		} else {
 			s.fileService.Add(models.File{Path: path, ParentDirectory: directory.Id})
 		}
@@ -99,6 +100,11 @@ func (s *DirectoryService) GetChildren(id string) (*viewmodels.FilesInDirs, erro
 		return nil, err
 	}
 
+	dirs, err := s.FindChildren(parent)
+	if err != nil {
+		return nil, err
+	}
+
 	files, err := s.fileService.GetFilesInDir(parent)
 	if err != nil {
 		return nil, err
@@ -106,6 +112,11 @@ func (s *DirectoryService) GetChildren(id string) (*viewmodels.FilesInDirs, erro
 
 	var result viewmodels.FilesInDirs
 	result.Files = files
+	result.Dirs = dirs
 
 	return &result, nil
+}
+
+func (s *DirectoryService) FindChildren(directory *models.Directory) ([]models.Directory, error) {
+	return s.repository.FindMany("ParentDirectory", directory.Id)
 }

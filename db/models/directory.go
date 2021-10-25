@@ -3,10 +3,11 @@ package models
 import "database/sql"
 
 type Directory struct {
-	Id          string
-	Path        string
-	Dateadded   string
-	Lastchecked sql.NullString
+	Id              string
+	Path            string
+	Dateadded       string
+	Lastchecked     sql.NullString
+	ParentDirectory sql.NullString
 }
 
 // type DirectoryDump struct {

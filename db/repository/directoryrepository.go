@@ -13,7 +13,7 @@ import (
 type DirectoryRepository interface {
 	Add(models.Directory) (*models.Directory, error)
 	Get(id string) (*models.Directory, error)
-	Delete(id string) error
+	// Delete(id string) error
 	List(limit, offset uint) ([]models.Directory, error)
 	FindOne(column string, value interface{}) (*models.Directory, error)
 	FindMany(column string, value interface{}) ([]models.Directory, error)
@@ -30,8 +30,8 @@ func NewDirectorySet(db db.DbConfig, logger common.Logger) *Directories {
 
 func (dirs *Directories) Add(directory models.Directory) (*models.Directory, error) {
 	directory.Id = fmt.Sprintf("0x%x", [16]byte(uuid.New()))
-	query := "INSERT INTO Directory (Id, Path) VALUES (?, ?)"
-	_, err := dirs.db.GetDB().Exec(query, directory.Id, directory.Path, directory.Dateadded, directory.Lastchecked)
+	query := "INSERT INTO Directory (Id, Path, ParentDirectory) VALUES (?, ?, ?)"
+	_, err := dirs.db.GetDB().Exec(query, directory.Id, directory.Path, directory.ParentDirectory)
 	if err != nil {
 		return nil, err
 	}
@@ -45,12 +45,7 @@ func (dirs *Directories) Add(directory models.Directory) (*models.Directory, err
 }
 
 func (dirs *Directories) Get(id string) (*models.Directory, error) {
-	var dir models.Directory
-	query := "SELECT * FROM Directory WHERE Id = ?"
-	row := dirs.db.GetDB().QueryRow(query, id)
-	err := row.Scan(&dir.Id, &dir.Path, &dir.Dateadded, &dir.Lastchecked)
-
-	return &dir, err
+	return dirs.FindOne("Id", id)
 }
 
 func (dirs *Directories) List(limit, offset uint) ([]models.Directory, error) {
@@ -66,7 +61,7 @@ func (dirs *Directories) List(limit, offset uint) ([]models.Directory, error) {
 
 	for rows.Next() {
 		var dir models.Directory
-		if err := rows.Scan(&dir.Id, &dir.Path, &dir.Dateadded, &dir.Lastchecked); err != nil {
+		if err := rows.Scan(&dir.Id, &dir.Path, &dir.Dateadded, &dir.Lastchecked, &dir.ParentDirectory); err != nil {
 			dirs.logger.Error("could not bind remote data ", err)
 			return nil, err
 		}
@@ -91,7 +86,7 @@ func (dirs *Directories) FindOne(column string, value interface{}) (*models.Dire
 	var dir models.Directory
 	query := fmt.Sprintf("SELECT * FROM Directory WHERE %s = ? LIMIT 1", column)
 	row := dirs.db.GetDB().QueryRow(query, value)
-	err := row.Scan(&dir.Id, &dir.Path, &dir.Dateadded, &dir.Lastchecked)
+	err := row.Scan(&dir.Id, &dir.Path, &dir.Dateadded, &dir.Lastchecked, &dir.ParentDirectory)
 
 	if err != nil {
 		return nil, err
@@ -118,7 +113,7 @@ func (dirs *Directories) FindMany(column string, value interface{}) ([]models.Di
 
 	for rows.Next() {
 		var dir models.Directory
-		if err := rows.Scan(&dir.Id, &dir.Path, &dir.Dateadded, &dir.Lastchecked); err != nil {
+		if err := rows.Scan(&dir.Id, &dir.Path, &dir.Dateadded, &dir.Lastchecked, &dir.ParentDirectory); err != nil {
 			dirs.logger.Error("could not bind remote data ", err)
 			return nil, err
 		}

@@ -1,2 +1,0 @@
-ALTER TABLE File
-DROP COLUMN MimeType;

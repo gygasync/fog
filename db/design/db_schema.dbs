@@ -7,9 +7,10 @@
 			</column>
 			<column name="Path" type="text" jt="-1" mandatory="y" />
 			<column name="Dateadded" type="datetime" jt="93" >
-				<defo><![CDATA[CURRENT_TIMESTAMP]]></defo>
+				<defo><![CDATA[CURRENT_DATE]]></defo>
 			</column>
 			<column name="Lastchecked" type="datetime" jt="93" />
+			<column name="ParentDirectory" type="varbinary" length="16" jt="-3" />
 			<index name="Pk_directory_id" unique="PRIMARY_KEY" >
 				<column name="Id" />
 			</index>
@@ -17,12 +18,15 @@
 				<comment><![CDATA[Guid idx]]></comment>
 				<column name="Id" />
 			</index>
+			<fk name="Fk_Directory_Self" to_schema="Default" to_table="Directory" >
+				<fk_column name="ParentDirectory" pk="Id" />
+			</fk>
 		</table>
 		<table name="File" >
 			<column name="Id" type="varbinary" length="16" jt="-3" mandatory="y" />
-			<column name="Path" type="text" jt="-1" />
-			<column name="Parentdirectory" type="varbinary" length="16" jt="-3" mandatory="y" />
-			<column name="Checksum" type="binary" length="32" jt="-2" />
+			<column name="Path" type="bit" jt="-7" mandatory="y" />
+			<column name="ParentDirectory" type="varbinary" length="16" jt="-3" />
+			<column name="Checksum" type="text" jt="-1" />
 			<column name="Lastchecked" type="datetime" jt="93" />
 			<column name="MimeType" type="varchar" length="100" jt="12" />
 			<index name="Pk_File_Id" unique="PRIMARY_KEY" >
@@ -32,14 +36,15 @@
 				<comment><![CDATA[Guid idx]]></comment>
 				<column name="Id" />
 			</index>
-			<fk name="Fk_File_Directory" to_schema="Default" to_table="Directory" >
-				<fk_column name="Parentdirectory" pk="Id" />
+			<fk name="Fk_File_Parentdir" to_schema="Default" to_table="Directory" >
+				<fk_column name="ParentDirectory" pk="Id" />
 			</fk>
 		</table>
 	</schema>
+	<connector name="MyDb" database="MySql" host="localhost" port="3306" user="root" />
 	<layout name="Default Layout" id="Layout-2df" show_relation="columns" >
 		<entity schema="Default" name="Directory" color="C1D8EE" x="48" y="48" />
-		<entity schema="Default" name="File" color="C1D8EE" x="240" y="272" />
+		<entity schema="Default" name="File" color="C1D8EE" x="576" y="80" />
 		<script name="SQL_Editor" id="Editor-1b2a" language="SQL" >
 			<string><![CDATA[CREATE TABLE Directory ( 
 	Id                   varchar(32) NOT NULL  PRIMARY KEY  ,
@@ -113,6 +118,93 @@ CREATE TABLE File (
  );
 
 CREATE INDEX Idx_File ON File ( Id );]]></string>
+		</script>
+		<script name="SQL_Editor_004" id="Editor-11d" language="SQL" >
+			<string><![CDATA[CREATE TABLE Directory ( 
+	Id                   varbinary(16) NOT NULL  PRIMARY KEY  ,
+	Path                 text NOT NULL    ,
+	Dateadded            datetime  DEFAULT CURRENT_TIMESTAMP   ,
+	Lastchecked          datetime     
+ );
+
+CREATE INDEX Idx_Directory ON Directory ( Id );
+
+CREATE TABLE File ( 
+	Id                   varbinary(16) NOT NULL  PRIMARY KEY  ,
+	Path                 text     ,
+	Parentdirectory      varbinary(16) NOT NULL    ,
+	Checksum             binary(32)     ,
+	Lastchecked          datetime     ,
+	MimeType             varchar(100)     ,
+	FOREIGN KEY ( Parentdirectory ) REFERENCES Directory( Id )  
+ );
+
+CREATE INDEX Idx_File ON File ( Id );
+]]></string>
+		</script>
+		<script name="SQL_Editor_005" id="Editor-58f" language="SQL" >
+			<string><![CDATA[CREATE TABLE Node ( 
+	Id                   varbinary(16) NOT NULL  PRIMARY KEY  ,
+	Parent               varbinary(16)     ,
+	Path                 text     ,
+	FOREIGN KEY ( Parent ) REFERENCES Node( Id )  
+ );
+
+CREATE INDEX Idx_Node ON Node ( Id );
+
+CREATE TABLE Directory ( 
+	Id                   varbinary(16) NOT NULL  PRIMARY KEY  ,
+	Dateadded            datetime  DEFAULT CURRENT_TIMESTAMP   ,
+	Lastchecked          datetime     ,
+	FOREIGN KEY ( Id ) REFERENCES Node( Id )  
+ );
+
+CREATE INDEX Idx_Directory ON Directory ( Id );
+
+CREATE TABLE File ( 
+	Id                   varbinary(16) NOT NULL  PRIMARY KEY  ,
+	Checksum             binary(32)     ,
+	Lastchecked          datetime     ,
+	MimeType             varchar(100)     ,
+	FOREIGN KEY ( Id ) REFERENCES Node( Id )  
+ );
+
+CREATE INDEX Idx_File ON File ( Id );
+]]></string>
+		</script>
+		<script name="SQL_Editor_006" id="Editor-14fb" language="SQL" >
+			<string><![CDATA[CREATE TABLE Directory ( 
+	Id                   varbinary(16) NOT NULL  PRIMARY KEY  ,
+	Path                 text NOT NULL    ,
+	Dateadded            datetime  DEFAULT CURRENT_DATE   ,
+	Lastchecked          datetime     ,
+	ParentDirectory      varbinary(16)     ,
+	FOREIGN KEY ( ParentDirectory ) REFERENCES Directory( Id )  
+ );
+
+CREATE INDEX Idx_Directory ON Directory ( Id );
+
+CREATE TABLE File ( 
+	Id                   varbinary(16) NOT NULL  PRIMARY KEY  ,
+	Path                 bit NOT NULL    ,
+	ParentDirectory      varbinary(16)     ,
+	Checksum             text     ,
+	Lastchecked          datetime     ,
+	MimeType             varchar(100)     ,
+	FOREIGN KEY ( ParentDirectory ) REFERENCES Directory( Id )  
+ );
+
+CREATE INDEX Idx_File ON File ( Id );
+
+CREATE TABLE Node ( 
+	Id                   varbinary(16) NOT NULL  PRIMARY KEY  ,
+	Parent               varbinary(16)     ,
+	Path                 text     ,
+	FOREIGN KEY ( Parent ) REFERENCES Node( Id )  
+ );
+
+CREATE INDEX Idx_Node ON Node ( Id );
+]]></string>
 		</script>
 	</layout>
 </project>
