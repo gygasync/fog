@@ -59,13 +59,13 @@ func (s *DirectoryService) Add(directory models.Directory) error {
 		s.logger.Warnf("unable to add path %s %s", directory.Path, err.Error())
 		return err
 	}
-	err = s.repository.Add(directory)
+	newDir, err := s.repository.Add(directory)
 
 	if err != nil {
 		return err
 	}
 
-	err = s.workDirectory(directory)
+	err = s.workDirectory(newDir)
 	if err != nil {
 		s.logger.Error("error traversing directory", err)
 	}
@@ -73,7 +73,7 @@ func (s *DirectoryService) Add(directory models.Directory) error {
 	return nil
 }
 
-func (s *DirectoryService) workDirectory(directory models.Directory) error {
+func (s *DirectoryService) workDirectory(directory *models.Directory) error {
 	files, err := ioutil.ReadDir(directory.Path)
 	if err != nil {
 		return err

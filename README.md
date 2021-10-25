@@ -5,4 +5,6 @@
 Just a sample Go playground for now!
 
 ## How to run
+You need gcc installed to perform migrations
+
     go run .

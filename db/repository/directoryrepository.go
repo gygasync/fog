@@ -11,8 +11,8 @@ import (
 )
 
 type DirectoryRepository interface {
-	Add(models.Directory) error
-	Get(id string) (models.Directory, error)
+	Add(models.Directory) (*models.Directory, error)
+	Get(id string) (*models.Directory, error)
 	Delete(id string) error
 	List(limit, offset uint) ([]models.Directory, error)
 	FindOne(column string, value interface{}) (models.Directory, error)
@@ -28,21 +28,29 @@ func NewDirectorySet(db db.DbConfig, logger common.Logger) *Directories {
 	return &Directories{db: db, logger: logger}
 }
 
-func (dirs *Directories) Add(directory models.Directory) error {
+func (dirs *Directories) Add(directory models.Directory) (*models.Directory, error) {
 	directory.Id = fmt.Sprintf("0x%x", [16]byte(uuid.New()))
 	query := "INSERT INTO Directory (Id, Path) VALUES (?, ?)"
 	_, err := dirs.db.GetDB().Exec(query, directory.Id, directory.Path, directory.Dateadded, directory.Lastchecked)
+	if err != nil {
+		return nil, err
+	}
 
-	return err
+	newDir, err := dirs.Get(directory.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return newDir, nil
 }
 
-func (dirs *Directories) Get(id string) (models.Directory, error) {
+func (dirs *Directories) Get(id string) (*models.Directory, error) {
 	var dir models.Directory
 	query := "SELECT * FROM Directory WHERE Id = ?"
 	row := dirs.db.GetDB().QueryRow(query, id)
 	err := row.Scan(&dir.Id, &dir.Path, &dir.Dateadded, &dir.Lastchecked)
 
-	return dir, err
+	return &dir, err
 }
 
 func (dirs *Directories) List(limit, offset uint) ([]models.Directory, error) {
