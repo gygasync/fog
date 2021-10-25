@@ -113,6 +113,7 @@ func (s *DirectoryService) GetChildren(id string) (*viewmodels.FilesInDirs, erro
 	var result viewmodels.FilesInDirs
 	result.Files = files
 	result.Dirs = dirs
+	result.ParentDirectoryId = parent.ParentDirectory.String
 
 	return &result, nil
 }

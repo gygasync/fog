@@ -7,12 +7,26 @@
         <th>MIME</th>
     </thead>
     <tbody>
+        <tr>
+            <th>
+                <a href="{{.ParentDirectoryId}}">
+                    <span class="icon">
+                        <ion-icon name="return-up-back-outline"></ion-icon>
+                    </span>../
+                </a>
+            </th>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
         {{range .Dirs}}
         <tr>
             <th>
-                <span class="icon">
-                    <ion-icon name="folder-outline"></ion-icon>
-                </span>{{.Path}}
+                <a href="{{.Id}}">
+                    <span class="icon">
+                        <ion-icon name="folder-outline"></ion-icon>
+                    </span>{{.Path}}
+                </a>
             </th>
             <td>{{.Id}}</td>
             <td>{{.Dateadded}}</td>
@@ -22,10 +36,12 @@
         {{range .Files}}
         <tr>
             <th>
-                <span class="icon">
-                <ion-icon name="document-outline"></ion-icon>
-            </span>{{.Path}}
-        </th>
+                <a href="{{.Id}}">
+                    <span class="icon">
+                        <ion-icon name="document-outline"></ion-icon>
+                    </span>{{.Path}}
+                </a>
+            </th>
             <td>{{.Id}}</td>
             <td></td>
             <td>{{.MimeType.String}}</td>
