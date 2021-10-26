@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"fog/common"
 	"fog/db"
 	"fog/db/models"
@@ -11,6 +12,7 @@ type ITagRepository interface {
 	Get(id string) (*models.Tag, error)
 	FindOne(column string, value interface{}) (*models.Tag, error)
 	FindMany(column string, value interface{}) ([]models.Tag, error)
+	GetAll() ([]models.Tag, error)
 }
 
 type TagRepository struct {
@@ -63,6 +65,29 @@ func (tags *TagRepository) FindMany(column string, value interface{}) ([]models.
 	var result []models.Tag
 	query := GenerateFindManyQuery(tags.tableName, column)
 	rows, err := tags.db.GetDB().Query(query, value)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var tag models.Tag
+		if err := rows.Scan(&tag.Id, &tag.Name); err != nil {
+			tags.logger.Error("could not bind remote data ", err)
+			return nil, err
+		}
+		result = append(result, tag)
+	}
+
+	return result, nil
+}
+
+func (tags *TagRepository) GetAll() ([]models.Tag, error) {
+	var result []models.Tag
+	query := fmt.Sprintf("SELECT * FROM %s", tags.tableName)
+	rows, err := tags.db.GetDB().Query(query)
 
 	if err != nil {
 		return nil, err
