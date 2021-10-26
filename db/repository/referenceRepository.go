@@ -59,3 +59,26 @@ func (refs *ReferenceRepository) Add(ref *models.Reference) (*models.Reference, 
 
 	return newRef, nil
 }
+
+func (refs *ReferenceRepository) FindMany(column string, value interface{}) ([]models.Reference, error) {
+	var result []models.Reference
+	query := GenerateFindManyQuery(refs.tableName, column)
+	rows, err := refs.db.GetDB().Query(query, value)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		var ref models.Reference
+		if err := rows.Scan(&ref.Id, &ref.Tag, &ref.Item); err != nil {
+			refs.logger.Error("could not bind remote data ", err)
+			return nil, err
+		}
+		result = append(result, ref)
+	}
+
+	return result, nil
+}

@@ -9,6 +9,7 @@ import (
 type ITagService interface {
 	Add(tag *models.Tag) error
 	List() ([]models.Tag, error)
+	Get(id string) (*models.Tag, error)
 }
 
 type TagService struct {
@@ -27,4 +28,8 @@ func (s *TagService) Add(tag *models.Tag) error {
 
 func (s *TagService) List() ([]models.Tag, error) {
 	return s.repository.GetAll()
+}
+
+func (s *TagService) Get(id string) (*models.Tag, error) {
+	return s.repository.Get(id)
 }
