@@ -6,8 +6,6 @@ import (
 	"fog/db/models"
 )
 
-var tableName = "Tag"
-
 type ITagRepository interface {
 	Add(tag *models.Tag) (*models.Tag, error)
 	Get(id string) (*models.Tag, error)
@@ -18,15 +16,17 @@ type ITagRepository interface {
 type TagRepository struct {
 	logger common.Logger
 	db     db.DbConfig
+
+	tableName string
 }
 
 func NewTagRepository(logger common.Logger, db db.DbConfig) *TagRepository {
-	return &TagRepository{logger: logger, db: db}
+	return &TagRepository{logger: logger, db: db, tableName: "Tag"}
 }
 
 func (tags *TagRepository) FindOne(column string, value interface{}) (*models.Tag, error) {
 	var tag models.Tag
-	query := GenerateFindOneQuery(tableName, column)
+	query := GenerateFindOneQuery(tags.tableName, column)
 	row := tags.db.GetDB().QueryRow(query, value)
 	err := row.Scan(&tag.Id, &tag.Name)
 
@@ -61,7 +61,7 @@ func (tags *TagRepository) Add(tag *models.Tag) (*models.Tag, error) {
 
 func (tags *TagRepository) FindMany(column string, value interface{}) ([]models.Tag, error) {
 	var result []models.Tag
-	query := GenerateFindManyQuery(tableName, column)
+	query := GenerateFindManyQuery(tags.tableName, column)
 	rows, err := tags.db.GetDB().Query(query, value)
 
 	if err != nil {

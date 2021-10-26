@@ -21,10 +21,12 @@ type FileRepository interface {
 type Files struct {
 	logger common.Logger
 	db     db.DbConfig
+
+	tableName string
 }
 
 func NewFileRepository(logger common.Logger, db db.DbConfig) *Files {
-	return &Files{db: db, logger: logger}
+	return &Files{db: db, logger: logger, tableName: "File"}
 }
 
 func (files *Files) Add(file models.File) (*models.File, error) {
