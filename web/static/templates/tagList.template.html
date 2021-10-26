@@ -1,0 +1,23 @@
+{{define "tagList"}}
+<div class="column">
+    <div class="tags are-medium">
+        {{range .}}
+            <span class="tag is-primary">{{.Name}}</span>
+        {{end}}
+    </div>
+</div>
+</table>
+<form method="post">
+    <div class="field">
+        <label class="label">Tag</label>
+        <div class="control">
+            <input class="input" name="tagName" type="text" placeholder="e.g. places">
+        </div>
+    </div>
+    <div class="field is-grouped">
+        <div class="control">
+            <button type="submit" class="button is-link">Submit</button>
+        </div>
+    </div>
+</form>
+{{end}}

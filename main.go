@@ -65,14 +65,20 @@ func main() {
 	directoryRepository := repository.NewDirectorySet(conn, logger)
 	directoryService := services.NewDirectoryService(logger, directoryRepository, fileService)
 
+	tagRepository := repository.NewTagRepository(logger, conn)
+	tagService := services.NewTagService(logger, tagRepository)
+
 	dirRoute := routes.NewDirRoute(logger, tplEngine, directoryService)
 	dirFiles := routes.NewFilesRoute(logger, tplEngine, fileService, directoryService)
+	tagRoute := routes.NewTagRoute(logger, tplEngine, tagService)
 
 	router.RegisterRoute("/", web.GET, indexRoute)
 	router.RegisterRoute("/dir", web.GET, dirRoute)
 	router.RegisterRoute("/dir", web.POST, dirRoute)
 	router.RegisterRoute("/files/:id", web.GET, dirFiles)
 	router.RegisterRoute("/files", web.POST, dirFiles)
+	router.RegisterRoute("/tags", web.GET, tagRoute)
+	router.RegisterRoute("/tags", web.POST, tagRoute)
 
 	logger.Fatal(http.ListenAndServe(":8080", router.Router()))
 
