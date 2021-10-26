@@ -40,20 +40,6 @@
 				<fk_column name="ParentDirectory" pk="Id" />
 			</fk>
 		</table>
-		<table name="Node" prior="Tbl" >
-			<column name="Id" type="varbinary" length="16" jt="-3" mandatory="y" />
-			<column name="Parent" type="varbinary" length="16" jt="-3" />
-			<column name="Path" type="text" jt="-1" />
-			<index name="Pk_Node_Id" unique="PRIMARY_KEY" >
-				<column name="Id" />
-			</index>
-			<index name="Idx_Node" unique="NORMAL" >
-				<column name="Id" />
-			</index>
-			<fk name="Fk_Node_Parent" to_schema="Default" to_table="Node" >
-				<fk_column name="Parent" pk="Id" />
-			</fk>
-		</table>
 	</schema>
 	<connector name="MyDb" database="MySql" host="localhost" port="3306" user="root" />
 	<layout name="Default Layout" id="Layout-2df" show_relation="columns" >
@@ -184,6 +170,40 @@ CREATE TABLE File (
  );
 
 CREATE INDEX Idx_File ON File ( Id );
+]]></string>
+		</script>
+		<script name="SQL_Editor_006" id="Editor-14fb" language="SQL" >
+			<string><![CDATA[CREATE TABLE Directory ( 
+	Id                   varbinary(16) NOT NULL  PRIMARY KEY  ,
+	Path                 text NOT NULL    ,
+	Dateadded            datetime  DEFAULT CURRENT_DATE   ,
+	Lastchecked          datetime     ,
+	ParentDirectory      varbinary(16)     ,
+	FOREIGN KEY ( ParentDirectory ) REFERENCES Directory( Id )  
+ );
+
+CREATE INDEX Idx_Directory ON Directory ( Id );
+
+CREATE TABLE File ( 
+	Id                   varbinary(16) NOT NULL  PRIMARY KEY  ,
+	Path                 bit NOT NULL    ,
+	ParentDirectory      varbinary(16)     ,
+	Checksum             text     ,
+	Lastchecked          datetime     ,
+	MimeType             varchar(100)     ,
+	FOREIGN KEY ( ParentDirectory ) REFERENCES Directory( Id )  
+ );
+
+CREATE INDEX Idx_File ON File ( Id );
+
+CREATE TABLE Node ( 
+	Id                   varbinary(16) NOT NULL  PRIMARY KEY  ,
+	Parent               varbinary(16)     ,
+	Path                 text     ,
+	FOREIGN KEY ( Parent ) REFERENCES Node( Id )  
+ );
+
+CREATE INDEX Idx_Node ON Node ( Id );
 ]]></string>
 		</script>
 	</layout>
