@@ -8,7 +8,7 @@ import (
 
 type IReferenceRepository interface {
 	Add(ref *models.Reference) (*models.Reference, error)
-	Get(id int64) (*models.Tag, error)
+	Get(id int64) (*models.Reference, error)
 	FindOne(column string, value interface{}) (*models.Reference, error)
 	FindMany(column string, value interface{}) ([]models.Reference, error)
 }
