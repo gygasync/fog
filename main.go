@@ -3,6 +3,7 @@ package main
 import (
 	"fog/common"
 	"fog/db"
+	"fog/db/genericmodels"
 	"fog/db/repository"
 	"fog/services"
 	"fog/web"
@@ -79,6 +80,10 @@ func main() {
 	router.RegisterRoute("/files", web.POST, dirFiles)
 	router.RegisterRoute("/tags", web.GET, tagRoute)
 	router.RegisterRoute("/tags", web.POST, tagRoute)
+
+	genericDirRepo := repository.NewRepository(logger, conn, &genericmodels.Directory{})
+	dir, _ := genericDirRepo.FindOne("Id", "0x4b859d08ddb0442da48c30c038f20df3")
+	logger.Infof("%+v\n", dir)
 
 	logger.Fatal(http.ListenAndServe(":8080", router.Router()))
 
