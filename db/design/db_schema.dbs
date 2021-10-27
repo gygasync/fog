@@ -40,8 +40,32 @@
 				<fk_column name="ParentDirectory" pk="Id" />
 			</fk>
 		</table>
+		<table name="Metadata" >
+			<column name="Id" type="varbinary" length="16" jt="-3" mandatory="y" />
+			<column name="MetaType" type="integer" jt="4" mandatory="y" />
+			<column name="Reference" type="varbinary" length="16" jt="-3" mandatory="y" />
+			<index name="Pk_Metadata_Id" unique="PRIMARY_KEY" >
+				<column name="Id" />
+			</index>
+			<index name="Idx_Metadata" unique="NORMAL" >
+				<column name="Id" />
+			</index>
+			<fk name="Fk_Metadata_File" to_schema="Default" to_table="File" >
+				<fk_column name="Reference" pk="Id" />
+			</fk>
+			<fk name="fk_metadata_metadata" to_schema="Default" to_table="MetadataType" >
+				<fk_column name="MetaType" pk="Id" />
+			</fk>
+		</table>
+		<table name="MetadataType" >
+			<column name="Id" type="integer" jt="4" mandatory="y" />
+			<column name="Name" type="varchar" length="255" jt="12" mandatory="y" />
+			<index name="Pk_MetadataType_Id" unique="PRIMARY_KEY" >
+				<column name="Id" />
+			</index>
+		</table>
 		<table name="Reference" prior="Tbl" >
-			<column name="Id" type="bigint" jt="-5" mandatory="y" >
+			<column name="Id" type="integer" jt="4" mandatory="y" >
 				<defo><![CDATA[AUTOINCREMENT]]></defo>
 			</column>
 			<column name="Tag" type="varbinary" length="16" jt="-3" mandatory="y" />
@@ -66,7 +90,7 @@
 			</index>
 		</table>
 		<table name="TagToTag" prior="Tbl" >
-			<column name="Id" type="bigint" jt="-5" mandatory="y" >
+			<column name="Id" type="integer" jt="4" mandatory="y" >
 				<defo><![CDATA[AUTOINCREMENT]]></defo>
 			</column>
 			<column name="Source" type="varbinary" length="16" jt="-3" mandatory="y" />
@@ -86,7 +110,9 @@
 	<layout name="Default Layout" id="Layout-2df" show_relation="columns" >
 		<entity schema="Default" name="Directory" color="C1D8EE" x="48" y="48" />
 		<entity schema="Default" name="File" color="C1D8EE" x="576" y="80" />
-		<entity schema="Default" name="Reference" color="C1D8EE" x="832" y="288" />
+		<entity schema="Default" name="Metadata" color="C1D8EE" x="496" y="320" />
+		<entity schema="Default" name="MetadataType" color="C1D8EE" x="272" y="224" />
+		<entity schema="Default" name="Reference" color="C1D8EE" x="1008" y="288" />
 		<entity schema="Default" name="Tag" color="C1D8EE" x="880" y="64" />
 		<entity schema="Default" name="TagToTag" color="C1D8EE" x="1136" y="128" />
 		<script name="SQL_Editor" id="Editor-1b2a" language="SQL" >
@@ -273,6 +299,54 @@ CREATE TABLE File (
  );
 
 CREATE INDEX Idx_File ON File ( Id );
+]]></string>
+		</script>
+		<script name="SQL_Editor_008" id="Editor-16ad" language="SQL" >
+			<string><![CDATA[CREATE TABLE Tag ( 
+	Id                   varbinary(16) NOT NULL  PRIMARY KEY  ,
+	Name                 varchar(255) NOT NULL    
+ );
+
+CREATE TABLE TagToTag ( 
+	Id                   bigint NOT NULL DEFAULT AUTOINCREMENT PRIMARY KEY  ,
+	Source               varbinary(16) NOT NULL    ,
+	Target               varbinary(16) NOT NULL    ,
+	FOREIGN KEY ( Source ) REFERENCES Tag( Id )  ,
+	FOREIGN KEY ( Target ) REFERENCES Tag( Id )  
+ );
+
+CREATE TABLE Reference ( 
+	Id                   bigint NOT NULL DEFAULT AUTOINCREMENT PRIMARY KEY  ,
+	Tag                  varbinary(16) NOT NULL    ,
+	Item                 varbinary(16) NOT NULL    ,
+	FOREIGN KEY ( Tag ) REFERENCES Tag( Id )  
+ );
+
+CREATE INDEX Idx_Reference ON Reference ( Item );
+]]></string>
+		</script>
+		<script name="SQL_Editor_009" id="Editor-7fa" language="SQL" >
+			<string><![CDATA[CREATE TABLE Tag ( 
+	Id                   varbinary(16) NOT NULL  PRIMARY KEY  ,
+	Name                 varchar(255) NOT NULL    
+ );
+
+CREATE TABLE TagToTag ( 
+	Id                   integer NOT NULL DEFAULT AUTOINCREMENT PRIMARY KEY  ,
+	Source               varbinary(16) NOT NULL    ,
+	Target               varbinary(16) NOT NULL    ,
+	FOREIGN KEY ( Source ) REFERENCES Tag( Id )  ,
+	FOREIGN KEY ( Target ) REFERENCES Tag( Id )  
+ );
+
+CREATE TABLE Reference ( 
+	Id                   integer NOT NULL DEFAULT AUTOINCREMENT PRIMARY KEY  ,
+	Tag                  varbinary(16) NOT NULL    ,
+	Item                 varbinary(16) NOT NULL    ,
+	FOREIGN KEY ( Tag ) REFERENCES Tag( Id )  
+ );
+
+CREATE INDEX Idx_Reference ON Reference ( Item );
 ]]></string>
 		</script>
 	</layout>

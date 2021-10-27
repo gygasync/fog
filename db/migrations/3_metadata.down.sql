@@ -1,0 +1,2 @@
+DROP TABLE IF EXISTS Metadata;
+DROP TABLE IF EXISTS MetadataType;

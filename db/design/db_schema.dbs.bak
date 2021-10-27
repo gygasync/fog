@@ -40,11 +40,55 @@
 				<fk_column name="ParentDirectory" pk="Id" />
 			</fk>
 		</table>
+		<table name="Reference" prior="Tbl" >
+			<column name="Id" type="bigint" jt="-5" mandatory="y" >
+				<defo><![CDATA[AUTOINCREMENT]]></defo>
+			</column>
+			<column name="Tag" type="varbinary" length="16" jt="-3" mandatory="y" />
+			<column name="Item" type="varbinary" length="16" jt="-3" mandatory="y" >
+				<comment><![CDATA[This represents either a Dir or a File, so cannot express a FK constraint]]></comment>
+			</column>
+			<index name="Pk_Reference_Id" unique="PRIMARY_KEY" >
+				<column name="Id" />
+			</index>
+			<index name="Idx_Reference" unique="NORMAL" >
+				<column name="Item" />
+			</index>
+			<fk name="fk_reference_tag" to_schema="Default" to_table="Tag" >
+				<fk_column name="Tag" pk="Id" />
+			</fk>
+		</table>
+		<table name="Tag" prior="Tbl" >
+			<column name="Id" type="varbinary" length="16" jt="-3" mandatory="y" />
+			<column name="Name" type="varchar" length="255" jt="12" mandatory="y" />
+			<index name="Pk_Tag_Id" unique="PRIMARY_KEY" >
+				<column name="Id" />
+			</index>
+		</table>
+		<table name="TagToTag" prior="Tbl" >
+			<column name="Id" type="bigint" jt="-5" mandatory="y" >
+				<defo><![CDATA[AUTOINCREMENT]]></defo>
+			</column>
+			<column name="Source" type="varbinary" length="16" jt="-3" mandatory="y" />
+			<column name="Target" type="varbinary" length="16" jt="-3" mandatory="y" />
+			<index name="Pk_TagToTag_Id" unique="PRIMARY_KEY" >
+				<column name="Id" />
+			</index>
+			<fk name="Fk_TagToTag_Source" to_schema="Default" to_table="Tag" >
+				<fk_column name="Source" pk="Id" />
+			</fk>
+			<fk name="Fk_TagToTag_Target" to_schema="Default" to_table="Tag" >
+				<fk_column name="Target" pk="Id" />
+			</fk>
+		</table>
 	</schema>
 	<connector name="MyDb" database="MySql" host="localhost" port="3306" user="root" />
 	<layout name="Default Layout" id="Layout-2df" show_relation="columns" >
 		<entity schema="Default" name="Directory" color="C1D8EE" x="48" y="48" />
 		<entity schema="Default" name="File" color="C1D8EE" x="576" y="80" />
+		<entity schema="Default" name="Reference" color="C1D8EE" x="832" y="288" />
+		<entity schema="Default" name="Tag" color="C1D8EE" x="880" y="64" />
+		<entity schema="Default" name="TagToTag" color="C1D8EE" x="1136" y="128" />
 		<script name="SQL_Editor" id="Editor-1b2a" language="SQL" >
 			<string><![CDATA[CREATE TABLE Directory ( 
 	Id                   varchar(32) NOT NULL  PRIMARY KEY  ,
@@ -204,6 +248,31 @@ CREATE TABLE Node (
  );
 
 CREATE INDEX Idx_Node ON Node ( Id );
+]]></string>
+		</script>
+		<script name="SQL_Editor_007" id="Editor-204a" language="SQL" >
+			<string><![CDATA[CREATE TABLE Directory ( 
+	Id                   varbinary(16) NOT NULL  PRIMARY KEY  ,
+	Path                 text NOT NULL    ,
+	Dateadded            datetime  DEFAULT CURRENT_DATE   ,
+	Lastchecked          datetime     ,
+	ParentDirectory      varbinary(16)     ,
+	FOREIGN KEY ( ParentDirectory ) REFERENCES Directory( Id )  
+ );
+
+CREATE INDEX Idx_Directory ON Directory ( Id );
+
+CREATE TABLE File ( 
+	Id                   varbinary(16) NOT NULL  PRIMARY KEY  ,
+	Path                 bit NOT NULL    ,
+	ParentDirectory      varbinary(16)     ,
+	Checksum             text     ,
+	Lastchecked          datetime     ,
+	MimeType             varchar(100)     ,
+	FOREIGN KEY ( ParentDirectory ) REFERENCES Directory( Id )  
+ );
+
+CREATE INDEX Idx_File ON File ( Id );
 ]]></string>
 		</script>
 	</layout>
