@@ -1,6 +1,7 @@
 CREATE TABLE MetadataType ( 
 	Id                   integer NOT NULL  PRIMARY KEY AUTOINCREMENT  ,
-	Name                 varchar(255) NOT NULL    
+	Name                 varchar(255) NOT NULL    ,
+	CONSTRAINT Unq_MetadataType UNIQUE ( Name ) 
  );
 
 CREATE TABLE Metadata ( 

@@ -9,3 +9,4 @@ Format:
 - View directory contents
 - More file metadata (size, dates, etc...)
 - Figure out async (checksums, file additions, etc...)
+- Better way to do repositories
