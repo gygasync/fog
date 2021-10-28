@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"fog/common"
 	"fog/db"
 	"fog/db/genericmodels"
@@ -82,7 +83,11 @@ func main() {
 	router.RegisterRoute("/tags", web.POST, tagRoute)
 
 	genericFileRepo := repository.NewRepository(logger, conn.GetDB(), &genericmodels.File{})
-	genericFileRepo.Add(&genericmodels.File{Id: "asd", Path: "TEST", ParentDirectory: "aa"})
+	lis, _ := genericFileRepo.FindMany("ParentDirectory", "0xe2a69ec6e12b488eae3ea2cf1084965e")
+
+	for _, item := range lis {
+		fmt.Printf("%+v\n", item)
+	}
 
 	// dir, _ := genericDirRepo.FindOne("Id", "0x4b859d08ddb0442da48c30c038f20df3")
 	// logger.Info(repository.GetModelFields(&genericmodels.Directory{}))

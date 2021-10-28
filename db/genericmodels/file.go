@@ -23,7 +23,7 @@ func (file *File) ExecuteQuery(query string, f func(string, ...interface{}) (sql
 	return &file, res, nil
 }
 
-func (file *File) ScanRow(row *sql.Row) error {
+func (file *File) ScanRow(row *sql.Rows) error {
 	return row.Scan(&file.Id, &file.Path, &file.ParentDirectory, &file.Checksum, &file.Lastchecked, &file.MimeType)
 }
 

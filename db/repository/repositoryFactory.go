@@ -40,8 +40,12 @@ func NewRepository(logger common.Logger, db *sql.DB, middleman genericmodels.IMo
 
 func (r *Repository) FindOne(column string, value interface{}) (genericmodels.IModel, error) {
 	query := fmt.Sprintf("SELECT * FROM %s WHERE %s = ? LIMIT 1", r.tableName, column)
-	err := r.middleman.ScanRow(r.db.QueryRow(query, value))
+	rows, err := r.db.Query(query, value)
+	if err != nil {
+		return nil, err
+	}
 
+	err = r.middleman.ScanRow(rows)
 	if err != nil {
 		return nil, err
 	}
@@ -58,6 +62,27 @@ func (r *Repository) Add(item genericmodels.IModel) error {
 	}
 
 	return nil
+}
+
+func (r *Repository) FindMany(column string, value interface{}) ([]genericmodels.IModel, error) {
+	query := fmt.Sprintf("SELECT * FROM %s WHERE %s = ?", r.tableName, column)
+	rows, err := r.db.Query(query, value)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	var result []genericmodels.IModel
+
+	for rows.Next() {
+		if err := r.middleman.ScanRow(rows); err != nil {
+			return nil, err
+		}
+		result = append(result, r.middleman)
+	}
+
+	return result, nil
 }
 
 func getModelFields(model genericmodels.IModel) []string {
