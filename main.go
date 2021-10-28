@@ -81,9 +81,11 @@ func main() {
 	router.RegisterRoute("/tags", web.GET, tagRoute)
 	router.RegisterRoute("/tags", web.POST, tagRoute)
 
-	genericDirRepo := repository.NewRepository(logger, conn, &genericmodels.Directory{})
-	dir, _ := genericDirRepo.FindOne("Id", "0x4b859d08ddb0442da48c30c038f20df3")
-	logger.Infof("%+v\n", dir)
+	genericFileRepo := repository.NewRepository(logger, conn.GetDB(), &genericmodels.File{})
+	genericFileRepo.Add(&genericmodels.File{Id: "asd", Path: "TEST", ParentDirectory: "aa"})
+
+	// dir, _ := genericDirRepo.FindOne("Id", "0x4b859d08ddb0442da48c30c038f20df3")
+	// logger.Info(repository.GetModelFields(&genericmodels.Directory{}))
 
 	logger.Fatal(http.ListenAndServe(":8080", router.Router()))
 
