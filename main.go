@@ -56,6 +56,7 @@ func main() {
 	tplEngine.RegisterTemplate("./web/static/templates/main.template.html", "main")
 	tplEngine.RegisterTemplate("./web/static/templates/body.template.html", "body")
 	tplEngine.RegisterTemplate("./web/static/templates/header.template.html", "header")
+	tplEngine.RegisterTemplate("./web/static/templates/navigation.template.html", "navigation")
 
 	router := web.NewTplRouter(logger, tplEngine)
 
