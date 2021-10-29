@@ -3,7 +3,7 @@ package routes
 import (
 	"bytes"
 	"fog/common"
-	"fog/db/models"
+	"fog/db/genericmodels"
 	"fog/services"
 	"html/template"
 	"net/http"
@@ -27,7 +27,7 @@ func NewDirRoute(logger common.Logger, tplEngine TplEngine, service services.IDi
 		internalTplEngine: template.Must(template.ParseFiles("./web/static/templates/directoryList.template.html"))}
 }
 
-func (i *DirRoute) generateComponent(dirs []models.Directory) string {
+func (i *DirRoute) generateComponent(dirs []*genericmodels.Directory) string {
 	var buf bytes.Buffer
 	i.internalTplEngine.ExecuteTemplate(&buf, "directoryList", dirs)
 	return buf.String()
@@ -46,7 +46,7 @@ func (i *DirRoute) HandleGet(w http.ResponseWriter, r *http.Request, _ httproute
 func (i *DirRoute) HandlePost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	path := r.FormValue("path")
 	if path != "" {
-		i.service.Add(models.Directory{Path: path})
+		i.service.Add(&genericmodels.Directory{Path: path})
 		http.Redirect(w, r, "dir", http.StatusFound)
 	}
 }

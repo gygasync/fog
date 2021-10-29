@@ -16,8 +16,13 @@ func (ref *Reference) ExecuteQuery(query string, f func(string, ...interface{}) 
 	return ref, res, nil
 }
 
-func (ref *Reference) ScanRow(row *sql.Rows) error {
-	return row.Scan(&ref.Id, &ref.Tag, &ref.Item)
+func (ref *Reference) ScanRow(row *sql.Rows) (IModel, error) {
+	var temp Reference
+	err := row.Scan(&ref.Id, &ref.Tag, &ref.Item)
+	if err != nil {
+		return nil, err
+	}
+	return &temp, nil
 }
 
 func (ref *Reference) GetId() interface{} {

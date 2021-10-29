@@ -20,8 +20,13 @@ func (dir *Directory) ExecuteQuery(query string, f func(string, ...interface{}) 
 	return dir, res, nil
 }
 
-func (dir *Directory) ScanRow(row *sql.Rows) error {
-	return row.Scan(&dir.Id, &dir.Path, &dir.Dateadded, &dir.Lastchecked, &dir.ParentDirectory)
+func (dir *Directory) ScanRow(row *sql.Rows) (IModel, error) {
+	var temp Directory
+	err := row.Scan(&temp.Id, &temp.Path, &temp.Dateadded, &temp.Lastchecked, &temp.ParentDirectory)
+	if err != nil {
+		return nil, err
+	}
+	return &temp, nil
 }
 
 func (dir *Directory) GetId() interface{} {

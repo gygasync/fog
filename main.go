@@ -61,10 +61,12 @@ func main() {
 
 	indexRoute := routes.NewIndexRoute(logger, tplEngine)
 
-	fileRepository := repository.NewFileRepository(logger, conn)
+	// fileRepository := repository.NewFileRepository(logger, conn)
+	fileRepository := repository.NewRepository(logger, conn.GetDB(), &genericmodels.File{})
 	fileService := services.NewFileService(logger, fileRepository)
 
-	directoryRepository := repository.NewDirectorySet(conn, logger)
+	// directoryRepository := repository.NewDirectorySet(conn, logger)
+	directoryRepository := repository.NewRepository(logger, conn.GetDB(), &genericmodels.Directory{})
 	directoryService := services.NewDirectoryService(logger, directoryRepository, fileService)
 
 	tagRepository := repository.NewTagRepository(logger, conn)

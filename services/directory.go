@@ -4,32 +4,35 @@ import (
 	"database/sql"
 	"fmt"
 	"fog/common"
-	"fog/db/models"
+	"fog/db/genericmodels"
 	"fog/db/repository"
 	"fog/web/viewmodels"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"time"
+
+	"github.com/google/uuid"
 )
 
 type IDirectoryService interface {
-	List(limit, offset uint) []models.Directory
-	Add(directory models.Directory) error
+	List(limit, offset uint) []*genericmodels.Directory
+	Add(directory *genericmodels.Directory) error
 	GetChildren(id string) (*viewmodels.FilesInDirs, error)
-	FindChildren(directory *models.Directory) ([]models.Directory, error)
+	FindChildren(directory *genericmodels.Directory) ([]*genericmodels.Directory, error)
 }
 
 type DirectoryService struct {
 	logger      common.Logger
-	repository  repository.DirectoryRepository
+	repository  repository.IRepository
 	fileService IFileService
 }
 
-func NewDirectoryService(logger common.Logger, repository repository.DirectoryRepository, fileService IFileService) *DirectoryService {
+func NewDirectoryService(logger common.Logger, repository repository.IRepository, fileService IFileService) *DirectoryService {
 	return &DirectoryService{logger: logger, repository: repository, fileService: fileService}
 }
 
-func (s *DirectoryService) List(limit, offset uint) []models.Directory {
+func (s *DirectoryService) List(limit, offset uint) []*genericmodels.Directory {
 	result, err := s.repository.List(limit, offset)
 
 	if err != nil {
@@ -37,10 +40,22 @@ func (s *DirectoryService) List(limit, offset uint) []models.Directory {
 		return nil
 	}
 
-	return result
+	return s.derefArray(result)
 }
 
-func (s *DirectoryService) Add(directory models.Directory) error {
+func (s *DirectoryService) derefArray(input []genericmodels.IModel) []*genericmodels.Directory {
+	r := make([]*genericmodels.Directory, len(input))
+	for i, _ := range input {
+		a, ok := input[i].(*genericmodels.Directory)
+		if !ok {
+			return nil
+		}
+		r[i] = a
+	}
+	return r
+}
+
+func (s *DirectoryService) Add(directory *genericmodels.Directory) error {
 	dir, err := os.Stat(directory.Path)
 	if err != nil || !dir.IsDir() {
 		s.logger.Warnf("directory %s is not valid", directory.Path)
@@ -62,13 +77,15 @@ func (s *DirectoryService) Add(directory models.Directory) error {
 		s.logger.Warnf("unable to add path %s %s", directory.Path, err.Error())
 		return err
 	}
+	directory.Id = fmt.Sprintf("0x%x", [16]byte(uuid.New()))
+	directory.Dateadded = time.Now().Format(time.RFC3339)
 	newDir, err := s.repository.Add(directory)
 
 	if err != nil {
 		return err
 	}
 
-	err = s.workDirectory(newDir)
+	err = s.workDirectory(newDir.(*genericmodels.Directory))
 	if err != nil {
 		s.logger.Error("error traversing directory", err)
 	}
@@ -76,7 +93,7 @@ func (s *DirectoryService) Add(directory models.Directory) error {
 	return nil
 }
 
-func (s *DirectoryService) workDirectory(directory *models.Directory) error {
+func (s *DirectoryService) workDirectory(directory *genericmodels.Directory) error {
 	files, err := ioutil.ReadDir(directory.Path)
 	if err != nil {
 		return err
@@ -85,9 +102,9 @@ func (s *DirectoryService) workDirectory(directory *models.Directory) error {
 	for _, f := range files {
 		path := filepath.Join(directory.Path, f.Name())
 		if f.IsDir() {
-			s.Add(models.Directory{Path: path, ParentDirectory: sql.NullString{String: directory.Id, Valid: true}})
+			s.Add(&genericmodels.Directory{Path: path, ParentDirectory: sql.NullString{String: directory.Id, Valid: true}})
 		} else {
-			s.fileService.Add(models.File{Path: path, ParentDirectory: directory.Id})
+			s.fileService.Add(&genericmodels.File{Path: path, ParentDirectory: directory.Id})
 		}
 	}
 
@@ -100,12 +117,14 @@ func (s *DirectoryService) GetChildren(id string) (*viewmodels.FilesInDirs, erro
 		return nil, err
 	}
 
-	dirs, err := s.FindChildren(parent)
+	deref := parent.(*genericmodels.Directory)
+
+	dirs, err := s.FindChildren(deref)
 	if err != nil {
 		return nil, err
 	}
 
-	files, err := s.fileService.GetFilesInDir(parent)
+	files, err := s.fileService.GetFilesInDir(deref)
 	if err != nil {
 		return nil, err
 	}
@@ -113,11 +132,15 @@ func (s *DirectoryService) GetChildren(id string) (*viewmodels.FilesInDirs, erro
 	var result viewmodels.FilesInDirs
 	result.Files = files
 	result.Dirs = dirs
-	result.ParentDirectoryId = parent.ParentDirectory.String
+	result.ParentDirectoryId = deref.ParentDirectory.String
 
 	return &result, nil
 }
 
-func (s *DirectoryService) FindChildren(directory *models.Directory) ([]models.Directory, error) {
-	return s.repository.FindMany("ParentDirectory", directory.Id)
+func (s *DirectoryService) FindChildren(directory *genericmodels.Directory) ([]*genericmodels.Directory, error) {
+	res, err := s.repository.FindMany("ParentDirectory", directory.Id)
+	if err != nil {
+		return nil, err
+	}
+	return s.derefArray(res), nil
 }

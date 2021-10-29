@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"fog/common"
-	"fog/db/models"
+	"fog/db/genericmodels"
 	"fog/db/repository"
 	"io/ioutil"
 	"os"
@@ -14,20 +14,20 @@ import (
 )
 
 type IFileService interface {
-	Add(file models.File) error
-	List(limit, offset uint) []models.File
-	GetFilesInDir(dir *models.Directory) ([]models.File, error)
+	Add(file *genericmodels.File) error
+	List(limit, offset uint) []*genericmodels.File
+	GetFilesInDir(dir *genericmodels.Directory) ([]*genericmodels.File, error)
 }
 type FileService struct {
 	logger     common.Logger
-	repository repository.FileRepository
+	repository repository.IRepository
 }
 
-func NewFileService(logger common.Logger, repository repository.FileRepository) *FileService {
+func NewFileService(logger common.Logger, repository repository.IRepository) *FileService {
 	return &FileService{logger: logger, repository: repository}
 }
 
-func (s *FileService) Add(file models.File) error {
+func (s *FileService) Add(file *genericmodels.File) error {
 	dir, err := os.Stat(file.Path)
 	if err != nil || dir.IsDir() {
 		s.logger.Warnf("file %s is not valid", file.Path)
@@ -62,7 +62,19 @@ func (s *FileService) Add(file models.File) error {
 	return nil
 }
 
-func (s *FileService) List(limit, offset uint) []models.File {
+func (s *FileService) derefArray(input []genericmodels.IModel) []*genericmodels.File {
+	r := make([]*genericmodels.File, len(input))
+	for i, _ := range input {
+		a, ok := input[i].(*genericmodels.File)
+		if !ok {
+			return nil
+		}
+		r[i] = a
+	}
+	return r
+}
+
+func (s *FileService) List(limit, offset uint) []*genericmodels.File {
 	result, err := s.repository.List(limit, offset)
 
 	if err != nil {
@@ -70,14 +82,14 @@ func (s *FileService) List(limit, offset uint) []models.File {
 		return nil
 	}
 
-	return result
+	return s.derefArray(result)
 }
 
 func nullstr() sql.NullString {
 	return sql.NullString{String: "", Valid: false}
 }
 
-func (s *FileService) getMimeType(file models.File) sql.NullString {
+func (s *FileService) getMimeType(file *genericmodels.File) sql.NullString {
 	buf, err := ioutil.ReadFile(file.Path)
 	if err != nil {
 		return nullstr()
@@ -91,6 +103,10 @@ func (s *FileService) getMimeType(file models.File) sql.NullString {
 	return sql.NullString{String: kind.MIME.Value, Valid: true}
 }
 
-func (s *FileService) GetFilesInDir(dir *models.Directory) ([]models.File, error) {
-	return s.repository.FindMany("ParentDirectory", dir.Id)
+func (s *FileService) GetFilesInDir(dir *genericmodels.Directory) ([]*genericmodels.File, error) {
+	res, err := s.repository.FindMany("ParentDirectory", dir.Id)
+	if err != nil {
+		return nil, err
+	}
+	return s.derefArray(res), nil
 }

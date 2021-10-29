@@ -1,9 +1,9 @@
 package viewmodels
 
-import "fog/db/models"
+import "fog/db/genericmodels"
 
 type FilesInDirs struct {
 	ParentDirectoryId string
-	Dirs              []models.Directory
-	Files             []models.File
+	Dirs              []*genericmodels.Directory
+	Files             []*genericmodels.File
 }

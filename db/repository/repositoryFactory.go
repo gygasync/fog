@@ -16,6 +16,7 @@ type IRepository interface {
 	FindMany(column string, value interface{}) ([]genericmodels.IModel, error)
 	Delete(id interface{}) error
 	Update(item genericmodels.IModel) error
+	List(limit, offset uint) ([]genericmodels.IModel, error)
 }
 
 type Repository struct {
@@ -48,13 +49,15 @@ func (r *Repository) FindOne(column string, value interface{}) (genericmodels.IM
 	if err != nil {
 		return nil, err
 	}
+	if !rows.Next() {
+		return nil, sql.ErrNoRows
+	}
+	res, err := r.middleman.ScanRow(rows)
 
-	err = r.middleman.ScanRow(rows)
 	if err != nil {
 		return nil, err
 	}
-
-	return r.middleman, nil
+	return res, nil
 }
 
 func (r *Repository) Add(item genericmodels.IModel) (genericmodels.IModel, error) {
@@ -80,10 +83,11 @@ func (r *Repository) FindMany(column string, value interface{}) ([]genericmodels
 	var result []genericmodels.IModel
 
 	for rows.Next() {
-		if err := r.middleman.ScanRow(rows); err != nil {
+		item, err := r.middleman.ScanRow(rows)
+		if err != nil {
 			return nil, err
 		}
-		result = append(result, r.middleman)
+		result = append(result, item)
 	}
 
 	return result, nil
@@ -108,6 +112,27 @@ func (r *Repository) Update(item genericmodels.IModel) error {
 	_, err = r.Add(item)
 
 	return err
+}
+
+func (r *Repository) List(limit, offset uint) ([]genericmodels.IModel, error) {
+	var result []genericmodels.IModel
+	query := fmt.Sprintf("SELECT * FROM %s ORDER BY %s LIMIT ? OFFSET ?", r.tableName, r.idColumn)
+	rows, err := r.db.Query(query, limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	for rows.Next() {
+		item, err := r.middleman.ScanRow(rows)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, item)
+	}
+
+	return result, nil
 }
 
 func getModelFields(model genericmodels.IModel) []string {

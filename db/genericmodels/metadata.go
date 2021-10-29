@@ -17,8 +17,13 @@ func (meta *Metadata) ExecuteQuery(query string, f func(string, ...interface{}) 
 	return meta, res, nil
 }
 
-func (meta *Metadata) ScanRow(row *sql.Rows) error {
-	return row.Scan(&meta.Id, &meta.MetaType, &meta.Reference, &meta.Value)
+func (meta *Metadata) ScanRow(row *sql.Rows) (IModel, error) {
+	var temp Metadata
+	err := row.Scan(&meta.Id, &meta.MetaType, &meta.Reference, &meta.Value)
+	if err != nil {
+		return nil, err
+	}
+	return &temp, nil
 }
 
 func (meta *Metadata) GetId() interface{} {

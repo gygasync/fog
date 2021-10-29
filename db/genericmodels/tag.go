@@ -15,8 +15,13 @@ func (tag *Tag) ExecuteQuery(query string, f func(string, ...interface{}) (sql.R
 	return tag, res, nil
 }
 
-func (tag *Tag) ScanRow(row *sql.Rows) error {
-	return row.Scan(&tag.Id, &tag.Name)
+func (tag *Tag) ScanRow(row *sql.Rows) (IModel, error) {
+	var temp Tag
+	err := row.Scan(&tag.Id, &tag.Name)
+	if err != nil {
+		return nil, err
+	}
+	return &temp, nil
 }
 
 func (tag *Tag) GetId() interface{} {

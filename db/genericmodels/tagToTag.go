@@ -16,8 +16,13 @@ func (tag *TagToTag) ExecuteQuery(query string, f func(string, ...interface{}) (
 	return tag, res, nil
 }
 
-func (tag *TagToTag) ScanRow(row *sql.Rows) error {
-	return row.Scan(&tag.Id, &tag.Source, &tag.Target)
+func (tag *TagToTag) ScanRow(row *sql.Rows) (IModel, error) {
+	var temp TagToTag
+	err := row.Scan(&tag.Id, &tag.Source, &tag.Target)
+	if err != nil {
+		return nil, err
+	}
+	return &temp, nil
 }
 
 func (tag *TagToTag) GetId() interface{} {
