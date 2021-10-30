@@ -17,6 +17,7 @@ type IRepository interface {
 	Delete(id interface{}) error
 	Update(item genericmodels.IModel) error
 	List(limit, offset uint) ([]genericmodels.IModel, error)
+	GetLast(column string) (genericmodels.IModel, error)
 }
 
 type Repository struct {
@@ -46,10 +47,12 @@ func NewRepository(logger common.Logger, db *sql.DB, middleman genericmodels.IMo
 func (r *Repository) FindOne(column string, value interface{}) (genericmodels.IModel, error) {
 	query := fmt.Sprintf("SELECT * FROM %s WHERE %s = ? LIMIT 1", r.tableName, column)
 	rows, err := r.db.Query(query, value)
-	defer rows.Close()
+
 	if err != nil {
 		return nil, err
 	}
+
+	defer rows.Close()
 	if !rows.Next() {
 		return nil, sql.ErrNoRows
 	}
@@ -134,6 +137,26 @@ func (r *Repository) List(limit, offset uint) ([]genericmodels.IModel, error) {
 	}
 
 	return result, nil
+}
+
+func (r *Repository) GetLast(column string) (genericmodels.IModel, error) {
+	query := fmt.Sprintf("SELECT * FROM %s ORDER BY %s DESC LIMIT 1", r.tableName, column)
+	rows, err := r.db.Query(query)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+	if !rows.Next() {
+		return nil, sql.ErrNoRows
+	}
+	res, err := r.middleman.ScanRow(rows)
+
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
 func getModelFields(model genericmodels.IModel) []string {
