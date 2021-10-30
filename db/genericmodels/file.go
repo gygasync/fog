@@ -24,7 +24,7 @@ func (file *File) ExecuteQuery(query string, f func(string, ...interface{}) (sql
 
 func (file *File) ScanRow(row *sql.Rows) (IModel, error) {
 	var temp File
-	err := row.Scan(&file.Id, &file.Path, &file.ParentDirectory, &file.Checksum, &file.Lastchecked, &file.MimeType)
+	err := row.Scan(&temp.Id, &temp.Path, &temp.ParentDirectory, &temp.Checksum, &temp.Lastchecked, &temp.MimeType)
 	if err != nil {
 		return nil, err
 	}

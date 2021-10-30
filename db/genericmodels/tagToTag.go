@@ -18,7 +18,7 @@ func (tag *TagToTag) ExecuteQuery(query string, f func(string, ...interface{}) (
 
 func (tag *TagToTag) ScanRow(row *sql.Rows) (IModel, error) {
 	var temp TagToTag
-	err := row.Scan(&tag.Id, &tag.Source, &tag.Target)
+	err := row.Scan(&temp.Id, &temp.Source, &temp.Target)
 	if err != nil {
 		return nil, err
 	}

@@ -17,7 +17,7 @@ func (meta *MetadataType) ExecuteQuery(query string, f func(string, ...interface
 
 func (meta *MetadataType) ScanRow(row *sql.Rows) (IModel, error) {
 	var temp MetadataType
-	err := row.Scan(&meta.Id, &meta.Name)
+	err := row.Scan(&temp.Id, &temp.Name)
 	if err != nil {
 		return nil, err
 	}

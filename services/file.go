@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/google/uuid"
 	"github.com/h2non/filetype"
 )
 
@@ -52,6 +53,7 @@ func (s *FileService) Add(file *genericmodels.File) error {
 
 	// Do a mime type check
 	file.MimeType = s.getMimeType(file)
+	file.Id = fmt.Sprintf("0x%x", [16]byte(uuid.New()))
 
 	_, err = s.repository.Add(file)
 

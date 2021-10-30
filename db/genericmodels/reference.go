@@ -18,7 +18,7 @@ func (ref *Reference) ExecuteQuery(query string, f func(string, ...interface{}) 
 
 func (ref *Reference) ScanRow(row *sql.Rows) (IModel, error) {
 	var temp Reference
-	err := row.Scan(&ref.Id, &ref.Tag, &ref.Item)
+	err := row.Scan(&temp.Id, &temp.Tag, &temp.Item)
 	if err != nil {
 		return nil, err
 	}

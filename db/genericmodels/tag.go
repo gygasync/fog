@@ -17,7 +17,7 @@ func (tag *Tag) ExecuteQuery(query string, f func(string, ...interface{}) (sql.R
 
 func (tag *Tag) ScanRow(row *sql.Rows) (IModel, error) {
 	var temp Tag
-	err := row.Scan(&tag.Id, &tag.Name)
+	err := row.Scan(&temp.Id, &temp.Name)
 	if err != nil {
 		return nil, err
 	}
