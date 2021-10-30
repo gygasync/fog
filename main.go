@@ -6,6 +6,7 @@ import (
 	"fog/db"
 	"fog/db/genericmodels"
 	"fog/db/repository"
+	"fog/routines"
 	"fog/services"
 	"fog/web"
 	"fog/web/routes"
@@ -94,6 +95,17 @@ func main() {
 
 	// dir, _ := genericDirRepo.FindOne("Id", "0x4b859d08ddb0442da48c30c038f20df3")
 	// logger.Info(repository.GetModelFields(&genericmodels.Directory{}))
+
+	metadataRepo := repository.NewRepository(logger, conn.GetDB(), &genericmodels.Metadata{})
+	metadataTypeRepo := repository.NewRepository(logger, conn.GetDB(), &genericmodels.MetadataType{})
+
+	metadataTypeService := services.NewMetadataTypeService(logger, metadataTypeRepo)
+	metadataService := services.NewMetadataService(logger, metadataRepo, metadataTypeService, "EXIF")
+
+	exifSch := routines.NewExifScheduler(logger, metadataService, *fileService)
+	worker := exifSch.Schedule([]string{"0xd10af1c9bde24195825134e3949288bf"})
+
+	worker.Work()
 
 	logger.Fatal(http.ListenAndServe(":8080", router.Router()))
 

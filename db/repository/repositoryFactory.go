@@ -46,6 +46,7 @@ func NewRepository(logger common.Logger, db *sql.DB, middleman genericmodels.IMo
 func (r *Repository) FindOne(column string, value interface{}) (genericmodels.IModel, error) {
 	query := fmt.Sprintf("SELECT * FROM %s WHERE %s = ? LIMIT 1", r.tableName, column)
 	rows, err := r.db.Query(query, value)
+	defer rows.Close()
 	if err != nil {
 		return nil, err
 	}

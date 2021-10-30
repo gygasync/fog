@@ -18,6 +18,7 @@ type IFileService interface {
 	Add(file *genericmodels.File) error
 	List(limit, offset uint) []*genericmodels.File
 	GetFilesInDir(dir *genericmodels.Directory) ([]*genericmodels.File, error)
+	Find(Id string) (*genericmodels.File, error)
 }
 type FileService struct {
 	logger     common.Logger
@@ -26,6 +27,15 @@ type FileService struct {
 
 func NewFileService(logger common.Logger, repository repository.IRepository) *FileService {
 	return &FileService{logger: logger, repository: repository}
+}
+
+func (s *FileService) Find(Id string) (*genericmodels.File, error) {
+	res, err := s.repository.FindOne("Id", Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return res.(*genericmodels.File), err
 }
 
 func (s *FileService) Add(file *genericmodels.File) error {
