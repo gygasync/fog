@@ -71,20 +71,20 @@ func main() {
 	directoryRepository := repository.NewRepository(logger, conn.GetDB(), &genericmodels.Directory{})
 	directoryService := services.NewDirectoryService(logger, directoryRepository, fileService)
 
-	tagRepository := repository.NewTagRepository(logger, conn)
-	tagService := services.NewTagService(logger, tagRepository)
+	// tagRepository := repository.NewTagRepository(logger, conn)
+	// tagService := services.NewTagService(logger, tagRepository)
 
 	dirRoute := routes.NewDirRoute(logger, tplEngine, directoryService)
 	dirFiles := routes.NewFilesRoute(logger, tplEngine, fileService, directoryService)
-	tagRoute := routes.NewTagRoute(logger, tplEngine, tagService)
+	// tagRoute := routes.NewTagRoute(logger, tplEngine, tagService)
 
 	router.RegisterRoute("/", web.GET, indexRoute)
 	router.RegisterRoute("/dir", web.GET, dirRoute)
 	router.RegisterRoute("/dir", web.POST, dirRoute)
 	router.RegisterRoute("/files/:id", web.GET, dirFiles)
 	router.RegisterRoute("/files", web.POST, dirFiles)
-	router.RegisterRoute("/tags", web.GET, tagRoute)
-	router.RegisterRoute("/tags", web.POST, tagRoute)
+	// router.RegisterRoute("/tags", web.GET, tagRoute)
+	// router.RegisterRoute("/tags", web.POST, tagRoute)
 
 	genericFileRepo := repository.NewRepository(logger, conn.GetDB(), &genericmodels.File{})
 	lis, _ := genericFileRepo.FindMany("ParentDirectory", "0xe2a69ec6e12b488eae3ea2cf1084965e")
