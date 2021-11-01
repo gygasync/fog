@@ -1,5 +1,5 @@
 package routines
 
 type IWorker interface {
-	Work()
+	Work(args ...interface{}) <-chan interface{}
 }

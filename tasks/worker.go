@@ -1,8 +1,7 @@
 package tasks
 
 type IWorker interface {
-	EnqueueTask(task ITask) error
-	EnqueueTasks(tasks []ITask) (int, error)
+	NewTask(f func(args ...interface{}) (interface{}, error)) error
 	Notify() error
 }
 
@@ -16,12 +15,11 @@ func NewWorker(name string, capacity int) *Worker {
 	return &Worker{Name: name, capacity: capacity, Queue: make(chan ITask, capacity)}
 }
 
-func (w *Worker) EnqueueTask(task ITask) error {
-	w.Queue <- task
-	return nil
-}
+// func (w *Worker) NewTask(f func(args ...interface{}) (interface{}, error)) error {
+// 	task, err := NewTask(w, f)
+// 	if err != nil {
+// 		return err
+// 	}
 
-func (w *Worker) Notify() error {
-	w.capacity--
-	return nil
-}
+// 	go task.Do()
+// }

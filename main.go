@@ -102,10 +102,22 @@ func main() {
 	metadataTypeService := services.NewMetadataTypeService(logger, metadataTypeRepo)
 	metadataService := services.NewMetadataService(logger, metadataRepo, metadataTypeService, "EXIF")
 
-	exifSch := routines.NewExifScheduler(logger, metadataService, *fileService)
-	worker := exifSch.Schedule([]string{"0xd10af1c9bde24195825134e3949288bf"})
+	// exifSch := routines.NewExifScheduler(logger, metadataService, *fileService)
+	// worker := exifSch.Schedule([]string{"0xd10af1c9bde24195825134e3949288bf"})
 
-	worker.Work()
+	t1 := routines.NewExifWorker(logger, []string{"0xd10af1c9bde24195825134e3949288bf"}, metadataService, fileService).Do()
+	t2 := routines.NewExifWorker(logger, []string{"0xd10af1c9bde24195825134e3949288bf"}, metadataService, fileService).Do()
+	t3 := routines.NewExifWorker(logger, []string{"0xd10af1c9bde24195825134e3949288bf"}, metadataService, fileService).Do()
+	t4 := routines.NewExifWorker(logger, []string{"0xd10af1c9bde24195825134e3949288bf"}, metadataService, fileService).Do()
+	t5 := routines.NewExifWorker(logger, []string{"0xd10af1c9bde24195825134e3949288bf"}, metadataService, fileService).Do()
+
+	r1 := <-t1
+	r2 := <-t2
+	r3 := <-t3
+	r4 := <-t4
+	r5 := <-t5
+
+	fmt.Printf("a", r1, r2, r3, r4, r5)
 
 	logger.Fatal(http.ListenAndServe(":8080", router.Router()))
 
