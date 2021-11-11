@@ -1,24 +1,22 @@
 package tasks
 
-type Task struct {
-	work   func(args ...interface{}) <-chan interface{}
-	parent IWorker
-}
-
 type ITask interface {
+	GetType() string
+	GetBytes() []byte
 }
 
-func NewTask(parent IWorker, work func(args ...interface{}) <-chan interface{}, args ...interface{}) *Task {
-	return &Task{parent: parent, work: work}
+type ExifTask struct {
+	data []byte
 }
 
-func (t *Task) Do(args ...interface{}) <-chan interface{} {
-	result := make(chan interface{})
-	go func() {
-		defer close(result)
-		result <- t.work(args...)
-	}()
+func NewExifTask(data []byte) *ExifTask {
+	return &ExifTask{data: data}
+}
 
-	// t.parent.Notify()
-	return result
+func (e *ExifTask) GetType() string {
+	return "exif"
+}
+
+func (e *ExifTask) GetBytes() []byte {
+	return e.data
 }

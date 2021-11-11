@@ -6,8 +6,8 @@ import (
 	"fog/db"
 	"fog/db/genericmodels"
 	"fog/db/repository"
-	"fog/routines"
 	"fog/services"
+	"fog/tasks"
 	"fog/web"
 	"fog/web/routes"
 	"net/http"
@@ -74,8 +74,15 @@ func main() {
 	// tagRepository := repository.NewTagRepository(logger, conn)
 	// tagService := services.NewTagService(logger, tagRepository)
 
+	logf := func(b []byte) { logger.Infof("%s", b) }
+
+	orchestartor := tasks.NewOrchestrator("amqp://guest:guest@localhost:5672/", logger)
+	exifWorkers := tasks.NewWorkerGroup("exif", "", orchestartor.GetConnection(), logger)
+	worker := tasks.NewWorker(orchestartor.GetConnection(), "exif", logf, logger)
+	go worker.Start()
+
 	dirRoute := routes.NewDirRoute(logger, tplEngine, directoryService)
-	dirFiles := routes.NewFilesRoute(logger, tplEngine, fileService, directoryService)
+	dirFiles := routes.NewFilesRoute(logger, tplEngine, fileService, directoryService, exifWorkers)
 	// tagRoute := routes.NewTagRoute(logger, tplEngine, tagService)
 
 	router.RegisterRoute("/", web.GET, indexRoute)
@@ -96,28 +103,14 @@ func main() {
 	// dir, _ := genericDirRepo.FindOne("Id", "0x4b859d08ddb0442da48c30c038f20df3")
 	// logger.Info(repository.GetModelFields(&genericmodels.Directory{}))
 
-	metadataRepo := repository.NewRepository(logger, conn.GetDB(), &genericmodels.Metadata{})
-	metadataTypeRepo := repository.NewRepository(logger, conn.GetDB(), &genericmodels.MetadataType{})
+	// metadataRepo := repository.NewRepository(logger, conn.GetDB(), &genericmodels.Metadata{})
+	// metadataTypeRepo := repository.NewRepository(logger, conn.GetDB(), &genericmodels.MetadataType{})
 
-	metadataTypeService := services.NewMetadataTypeService(logger, metadataTypeRepo)
-	metadataService := services.NewMetadataService(logger, metadataRepo, metadataTypeService, "EXIF")
+	// metadataTypeService := services.NewMetadataTypeService(logger, metadataTypeRepo)
+	// metadataService := services.NewMetadataService(logger, metadataRepo, metadataTypeService, "EXIF")
 
 	// exifSch := routines.NewExifScheduler(logger, metadataService, *fileService)
 	// worker := exifSch.Schedule([]string{"0xd10af1c9bde24195825134e3949288bf"})
-
-	t1 := routines.NewExifWorker(logger, []string{"0xd10af1c9bde24195825134e3949288bf"}, metadataService, fileService).Do()
-	t2 := routines.NewExifWorker(logger, []string{"0xd10af1c9bde24195825134e3949288bf"}, metadataService, fileService).Do()
-	t3 := routines.NewExifWorker(logger, []string{"0xd10af1c9bde24195825134e3949288bf"}, metadataService, fileService).Do()
-	t4 := routines.NewExifWorker(logger, []string{"0xd10af1c9bde24195825134e3949288bf"}, metadataService, fileService).Do()
-	t5 := routines.NewExifWorker(logger, []string{"0xd10af1c9bde24195825134e3949288bf"}, metadataService, fileService).Do()
-
-	r1 := <-t1
-	r2 := <-t2
-	r3 := <-t3
-	r4 := <-t4
-	r5 := <-t5
-
-	fmt.Printf("a", r1, r2, r3, r4, r5)
 
 	logger.Fatal(http.ListenAndServe(":8080", router.Router()))
 

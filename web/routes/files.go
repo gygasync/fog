@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fog/common"
 	"fog/services"
+	"fog/tasks"
 	"fog/web/viewmodels"
 	"html/template"
 	"net/http"
@@ -16,17 +17,24 @@ type FilesRoute struct {
 	tplEngine        TplEngine
 	fileService      services.IFileService
 	directoryService services.IDirectoryService
+	workerGroup      tasks.IWorkerGroup
 
 	internalTplEngine *template.Template
 }
 
-func NewFilesRoute(logger common.Logger, tplEngine TplEngine, fileService services.IFileService, directoryService services.IDirectoryService) *FilesRoute {
+func NewFilesRoute(logger common.Logger,
+	tplEngine TplEngine,
+	fileService services.IFileService,
+	directoryService services.IDirectoryService,
+	workerGroup tasks.IWorkerGroup) *FilesRoute {
 	return &FilesRoute{
 		logger:            logger,
 		tplEngine:         tplEngine,
 		fileService:       fileService,
 		directoryService:  directoryService,
-		internalTplEngine: template.Must(template.ParseFiles("./web/static/templates/fileList.template.html"))}
+		internalTplEngine: template.Must(template.ParseFiles("./web/static/templates/fileList.template.html")),
+		workerGroup:       workerGroup,
+	}
 }
 
 func (i *FilesRoute) generateComponent(viewmodel *viewmodels.FilesInDirs) string {
@@ -42,7 +50,7 @@ func (i *FilesRoute) HandleGet(w http.ResponseWriter, r *http.Request, ps httpro
 		i.logger.Warn("could not find files ", err)
 		return
 	}
-
+	i.workerGroup.PostTask(tasks.NewExifTask([]byte(ps.ByName("id"))))
 	var bodyContent []template.HTML
 	component := i.generateComponent(data)
 	bodyContent = append(bodyContent, template.HTML(component))
