@@ -6,6 +6,7 @@ import (
 	"fog/common"
 	"fog/db/genericmodels"
 	"fog/db/repository"
+	"fog/tasks"
 
 	"github.com/google/uuid"
 )
@@ -18,6 +19,7 @@ type MetadataService struct {
 	logger              common.Logger
 	repository          repository.IRepository
 	metadataTypeService IMetadataTypeService
+	orchestartor        tasks.IOrchestrator
 	metaName            string
 	metaTypeId          int64
 }
@@ -26,7 +28,8 @@ func NewMetadataService(
 	logger common.Logger,
 	repository repository.IRepository,
 	metadataTypeService IMetadataTypeService,
-	metaName string) *MetadataService {
+	metaName string,
+	orchestrator tasks.IOrchestrator) *MetadataService {
 	metaType, err := metadataTypeService.FindOne("Name", metaName)
 
 	var metaTypeId int64
@@ -51,6 +54,7 @@ func NewMetadataService(
 		metadataTypeService: metadataTypeService,
 		metaTypeId:          metaTypeId,
 		metaName:            metaName,
+		orchestartor:        orchestrator,
 	}
 }
 

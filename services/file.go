@@ -6,6 +6,7 @@ import (
 	"fog/common"
 	"fog/db/genericmodels"
 	"fog/db/repository"
+	"fog/tasks"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -21,12 +22,13 @@ type IFileService interface {
 	Find(Id string) (*genericmodels.File, error)
 }
 type FileService struct {
-	logger     common.Logger
-	repository repository.IRepository
+	logger       common.Logger
+	repository   repository.IRepository
+	orchestrator tasks.IOrchestrator
 }
 
-func NewFileService(logger common.Logger, repository repository.IRepository) *FileService {
-	return &FileService{logger: logger, repository: repository}
+func NewFileService(logger common.Logger, repository repository.IRepository, orchestrator tasks.IOrchestrator) *FileService {
+	return &FileService{logger: logger, repository: repository, orchestrator: orchestrator}
 }
 
 func (s *FileService) Find(Id string) (*genericmodels.File, error) {

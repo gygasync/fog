@@ -63,20 +63,21 @@ func main() {
 
 	indexRoute := routes.NewIndexRoute(logger, tplEngine)
 
+	orchestartor := tasks.NewOrchestrator("amqp://guest:guest@localhost:5672/", logger)
+
 	// fileRepository := repository.NewFileRepository(logger, conn)
 	fileRepository := repository.NewRepository(logger, conn.GetDB(), &genericmodels.File{})
-	fileService := services.NewFileService(logger, fileRepository)
+	fileService := services.NewFileService(logger, fileRepository, orchestartor)
 
 	// directoryRepository := repository.NewDirectorySet(conn, logger)
 	directoryRepository := repository.NewRepository(logger, conn.GetDB(), &genericmodels.Directory{})
-	directoryService := services.NewDirectoryService(logger, directoryRepository, fileService)
+	directoryService := services.NewDirectoryService(logger, directoryRepository, fileService, orchestartor)
 
 	// tagRepository := repository.NewTagRepository(logger, conn)
 	// tagService := services.NewTagService(logger, tagRepository)
 
 	logf := func(b []byte) { logger.Infof("%s", b) }
 
-	orchestartor := tasks.NewOrchestrator("amqp://guest:guest@localhost:5672/", logger)
 	exifWorkers := tasks.NewWorkerGroup("exif", "", orchestartor.GetConnection(), logger)
 	worker := tasks.NewWorker(orchestartor.GetConnection(), "exif", logf, logger)
 	go worker.Start()

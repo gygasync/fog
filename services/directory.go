@@ -6,6 +6,7 @@ import (
 	"fog/common"
 	"fog/db/genericmodels"
 	"fog/db/repository"
+	"fog/tasks"
 	"fog/web/viewmodels"
 	"io/ioutil"
 	"os"
@@ -23,13 +24,14 @@ type IDirectoryService interface {
 }
 
 type DirectoryService struct {
-	logger      common.Logger
-	repository  repository.IRepository
-	fileService IFileService
+	logger       common.Logger
+	repository   repository.IRepository
+	fileService  IFileService
+	orchestrator tasks.IOrchestrator
 }
 
-func NewDirectoryService(logger common.Logger, repository repository.IRepository, fileService IFileService) *DirectoryService {
-	return &DirectoryService{logger: logger, repository: repository, fileService: fileService}
+func NewDirectoryService(logger common.Logger, repository repository.IRepository, fileService IFileService, orchestrator tasks.IOrchestrator) *DirectoryService {
+	return &DirectoryService{logger: logger, repository: repository, fileService: fileService, orchestrator: orchestrator}
 }
 
 func (s *DirectoryService) List(limit, offset uint) []*genericmodels.Directory {
