@@ -8,6 +8,7 @@ import (
 
 type IWorkerGroup interface {
 	PostTask(task ITask)
+	GetDetails() []string
 }
 
 type WorkerGroup struct {
@@ -47,4 +48,8 @@ func (w *WorkerGroup) PostTask(task ITask) {
 	if err != nil {
 		w.logger.Warn("Unable to post task ", err)
 	}
+}
+
+func (w *WorkerGroup) GetDetails() []string {
+	return []string{w.name}
 }

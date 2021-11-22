@@ -8,6 +8,7 @@ import (
 
 type IOrchestrator interface {
 	RegisterGroup(group IWorkerGroup) error
+	GetDetails() []string
 }
 
 type Orchestrator struct {
@@ -29,6 +30,10 @@ func (o *Orchestrator) RegisterGroup(group IWorkerGroup) error {
 
 func (o *Orchestrator) GetConnection() *amqp.Connection {
 	return o.connection
+}
+
+func (o *Orchestrator) GetDetails() []string {
+	return o.workers[0].GetDetails()
 }
 
 func failOnError(logger common.Logger, err error, msg string) {

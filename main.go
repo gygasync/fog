@@ -79,8 +79,11 @@ func main() {
 	logf := func(b []byte) { logger.Infof("%s", b) }
 
 	exifWorkers := tasks.NewWorkerGroup("exif", "", orchestartor.GetConnection(), logger)
+	orchestartor.RegisterGroup(exifWorkers)
 	worker := tasks.NewWorker(orchestartor.GetConnection(), "exif", logf, logger)
 	go worker.Start()
+
+	orchestratorRoute := routes.NewOrchestratorRoute(logger, tplEngine, orchestartor)
 
 	dirRoute := routes.NewDirRoute(logger, tplEngine, directoryService)
 	dirFiles := routes.NewFilesRoute(logger, tplEngine, fileService, directoryService, exifWorkers)
@@ -91,6 +94,8 @@ func main() {
 	router.RegisterRoute("/dir", web.POST, dirRoute)
 	router.RegisterRoute("/files/:id", web.GET, dirFiles)
 	router.RegisterRoute("/files", web.POST, dirFiles)
+	router.RegisterRoute("/orchestrator", web.GET, orchestratorRoute)
+	router.RegisterRoute("/orchestrator", web.POST, orchestratorRoute)
 	// router.RegisterRoute("/tags", web.GET, tagRoute)
 	// router.RegisterRoute("/tags", web.POST, tagRoute)
 
