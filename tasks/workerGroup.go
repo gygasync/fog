@@ -12,31 +12,30 @@ type IWorkerGroup interface {
 }
 
 type WorkerGroup struct {
-	queue    amqp.Queue
-	name     string
-	channel  *amqp.Channel
-	exchange string
-	logger   common.Logger
+	queue   amqp.Queue
+	name    string
+	channel *amqp.Channel
+	logger  common.Logger
 }
 
-func NewWorkerGroup(name string, exchange string, connection *amqp.Connection, logger common.Logger) *WorkerGroup {
+func NewWorkerGroup(name string, connection *amqp.Connection, logger common.Logger) *WorkerGroup {
 	ch, err := connection.Channel()
 	failOnError(logger, err, "Failed to open channel")
 	q, err := ch.QueueDeclare(
-		exchange, // name
-		false,    // durable
-		false,    // delete when unused
-		false,    // exclusive
-		false,    // no-wait
-		nil,      // arguments
+		name,  // name
+		false, // durable
+		false, // delete when unused
+		false, // exclusive
+		false, // no-wait
+		nil,   // arguments
 	)
 	failOnError(logger, err, "Failed to declare queue "+name)
-	return &WorkerGroup{logger: logger, queue: q, channel: ch, exchange: exchange, name: name}
+	return &WorkerGroup{logger: logger, queue: q, channel: ch, name: name}
 }
 
 func (w *WorkerGroup) PostTask(task ITask) {
 	err := w.channel.Publish(
-		w.exchange,
+		"",
 		w.name,
 		false,
 		false,
@@ -51,5 +50,9 @@ func (w *WorkerGroup) PostTask(task ITask) {
 }
 
 func (w *WorkerGroup) GetDetails() []string {
-	return []string{w.name}
+	var result []string
+	for i := 0; i < len(result); i++ {
+
+	}
+	return []string{"exif"}
 }

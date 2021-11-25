@@ -2,6 +2,7 @@ package tasks
 
 import (
 	"fog/common"
+	"fog/tasks/workers"
 
 	"github.com/google/uuid"
 	"github.com/streadway/amqp"
@@ -18,10 +19,10 @@ type Worker struct {
 	queue      amqp.Queue
 	workerName string
 	logger     common.Logger
-	worker     func([]byte)
+	workFn     workers.IWorkFn
 }
 
-func NewWorker(connection *amqp.Connection, queueName string, worker func([]byte), logger common.Logger) *Worker {
+func NewWorker(connection *amqp.Connection, queueName string, workFn workers.IWorkFn, logger common.Logger) *Worker {
 	ch, err := connection.Channel()
 	failOnError(logger, err, "Failed to open a channel")
 	q, err := ch.QueueDeclare(
@@ -33,15 +34,15 @@ func NewWorker(connection *amqp.Connection, queueName string, worker func([]byte
 		nil,       // arguments
 	)
 	failOnError(logger, err, "Failed to declare a queue")
-	return &Worker{connection: connection, channel: ch, queue: q, workerName: uuid.NewString(), logger: logger, worker: worker}
+	return &Worker{connection: connection, channel: ch, queue: q, workerName: uuid.NewString(), logger: logger, workFn: workFn}
 
 }
 
 func (w *Worker) Start() {
 	w.logger.Infof("Started worker %s", w.workerName)
 	msgs, err := w.channel.Consume(
+		"",
 		w.queue.Name,
-		w.workerName,
 		true,
 		false,
 		false,
@@ -57,7 +58,7 @@ func (w *Worker) Start() {
 
 	go func() {
 		for m := range msgs {
-			w.worker(m.Body)
+			w.workFn.Fn()(m.Body)
 		}
 	}()
 

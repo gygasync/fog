@@ -8,6 +8,7 @@ import (
 	"fog/db/repository"
 	"fog/services"
 	"fog/tasks"
+	"fog/tasks/workers"
 	"fog/web"
 	"fog/web/routes"
 	"net/http"
@@ -76,11 +77,11 @@ func main() {
 	// tagRepository := repository.NewTagRepository(logger, conn)
 	// tagService := services.NewTagService(logger, tagRepository)
 
-	logf := func(b []byte) { logger.Infof("%s", b) }
+	exifFn := workers.GetExifFn()
 
-	exifWorkers := tasks.NewWorkerGroup("exif", "", orchestartor.GetConnection(), logger)
+	exifWorkers := tasks.NewWorkerGroup("exif", orchestartor.GetConnection(), logger)
 	orchestartor.RegisterGroup(exifWorkers)
-	worker := tasks.NewWorker(orchestartor.GetConnection(), "exif", logf, logger)
+	worker := tasks.NewWorker(orchestartor.GetConnection(), "exif", exifFn, logger)
 	go worker.Start()
 
 	orchestratorRoute := routes.NewOrchestratorRoute(logger, tplEngine, orchestartor)
