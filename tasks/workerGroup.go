@@ -12,10 +12,11 @@ type IWorkerGroup interface {
 }
 
 type WorkerGroup struct {
-	queue   amqp.Queue
-	name    string
-	channel *amqp.Channel
-	logger  common.Logger
+	queue       amqp.Queue
+	returnQueue amqp.Queue
+	name        string
+	channel     *amqp.Channel
+	logger      common.Logger
 }
 
 func NewWorkerGroup(name string, connection *amqp.Connection, logger common.Logger) *WorkerGroup {
@@ -30,7 +31,16 @@ func NewWorkerGroup(name string, connection *amqp.Connection, logger common.Logg
 		nil,   // arguments
 	)
 	failOnError(logger, err, "Failed to declare queue "+name)
-	return &WorkerGroup{logger: logger, queue: q, channel: ch, name: name}
+	retQ, err := ch.QueueDeclare(
+		"__return-"+name, // name
+		false,            // durable
+		false,            // delete when unused
+		false,            // exclusive
+		false,            // no-wait
+		nil,              // arguments
+	)
+	failOnError(logger, err, "Failed to declare return queue "+name)
+	return &WorkerGroup{logger: logger, queue: q, returnQueue: retQ, channel: ch, name: name}
 }
 
 func (w *WorkerGroup) PostTask(task ITask) {
