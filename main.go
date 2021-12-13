@@ -8,6 +8,7 @@ import (
 	"fog/db/repository"
 	"fog/services"
 	"fog/tasks"
+	"fog/tasks/definitions"
 	"fog/tasks/workers"
 	"fog/web"
 	"fog/web/routes"
@@ -79,7 +80,9 @@ func main() {
 
 	exifFn := workers.GetExifFn()
 
-	exifWorkers := tasks.NewWorkerGroup("exif", orchestartor.GetConnection(), logger)
+	exifResponder := definitions.GetExifWorkHandler()
+	exifWorkers := tasks.NewWorkerGroup("exif", exifResponder, orchestartor.GetConnection(), logger)
+	go exifWorkers.Start()
 	orchestartor.RegisterGroup(exifWorkers)
 	worker := tasks.NewWorker(orchestartor.GetConnection(), "exif", exifFn, logger)
 	go worker.Start()

@@ -41,7 +41,7 @@ func NewWorker(connection *amqp.Connection, queueName string, workFn workers.IWo
 func (w *Worker) Start() {
 	w.logger.Infof("Started worker %s", w.workerName)
 	msgs, err := w.channel.Consume(
-		"",
+		w.queue.Name,
 		w.queue.Name,
 		true,
 		false,
