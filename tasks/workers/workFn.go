@@ -1,5 +1,5 @@
 package workers
 
 type IWorkFn interface {
-	Fn() func(b []byte)
+	Fn() func(b []byte) []byte
 }

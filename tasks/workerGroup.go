@@ -42,7 +42,7 @@ func NewWorkerGroup(name string, responder IResponse, connection *amqp.Connectio
 		nil,              // arguments
 	)
 	failOnError(logger, err, "Failed to declare return queue "+name)
-	return &WorkerGroup{logger: logger, queue: q, returnQueue: retQ, channel: ch, name: name}
+	return &WorkerGroup{logger: logger, queue: q, returnQueue: retQ, channel: ch, name: name, responder: responder}
 }
 
 func (w *WorkerGroup) PostTask(task ITask) {

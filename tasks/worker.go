@@ -20,9 +20,10 @@ type Worker struct {
 	workerName string
 	logger     common.Logger
 	workFn     workers.IWorkFn
+	workGroup  IWorkerGroup
 }
 
-func NewWorker(connection *amqp.Connection, queueName string, workFn workers.IWorkFn, logger common.Logger) *Worker {
+func NewWorker(connection *amqp.Connection, queueName string, workFn workers.IWorkFn, logger common.Logger, workGroup IWorkerGroup) *Worker {
 	ch, err := connection.Channel()
 	failOnError(logger, err, "Failed to open a channel")
 	q, err := ch.QueueDeclare(
@@ -34,7 +35,7 @@ func NewWorker(connection *amqp.Connection, queueName string, workFn workers.IWo
 		nil,       // arguments
 	)
 	failOnError(logger, err, "Failed to declare a queue")
-	return &Worker{connection: connection, channel: ch, queue: q, workerName: uuid.NewString(), logger: logger, workFn: workFn}
+	return &Worker{connection: connection, channel: ch, queue: q, workerName: uuid.NewString(), logger: logger, workFn: workFn, workGroup: workGroup}
 
 }
 
@@ -58,7 +59,8 @@ func (w *Worker) Start() {
 
 	go func() {
 		for m := range msgs {
-			w.workFn.Fn()(m.Body)
+			result := w.workFn.Fn()(m.Body)
+			w.workGroup.Respond(result)
 		}
 	}()
 

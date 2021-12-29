@@ -84,7 +84,7 @@ func main() {
 	exifWorkers := tasks.NewWorkerGroup("exif", exifResponder, orchestartor.GetConnection(), logger)
 	go exifWorkers.Start()
 	orchestartor.RegisterGroup(exifWorkers)
-	worker := tasks.NewWorker(orchestartor.GetConnection(), "exif", exifFn, logger)
+	worker := tasks.NewWorker(orchestartor.GetConnection(), "exif", exifFn, logger, exifWorkers)
 	go worker.Start()
 
 	orchestratorRoute := routes.NewOrchestratorRoute(logger, tplEngine, orchestartor)
