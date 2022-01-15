@@ -3,17 +3,17 @@ package work
 import "github.com/google/uuid"
 
 type responseDefinition struct {
-	id           string
-	workId       string
-	responseType string
-	payload      string
+	Id           string
+	WorkId       string
+	ResponseType string
+	Payload      string
 }
 
-func NewResponseDefinition(workDef workDefinition, payload string) *responseDefinition {
+func NewResponseDefinition(workDef workDefinition, responseType string, payload string) *responseDefinition {
 	return &responseDefinition{
-		id:           uuid.NewString(),
-		workId:       workDef.id,
-		responseType: workDef.workType,
-		payload:      payload,
+		Id:           uuid.NewString(),
+		WorkId:       workDef.Id,
+		ResponseType: responseType,
+		Payload:      payload,
 	}
 }

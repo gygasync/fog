@@ -3,15 +3,15 @@ package work
 import "github.com/google/uuid"
 
 type workDefinition struct {
-	id       string
-	workType string
-	payload  string
+	Id       string
+	WorkType string
+	Payload  string
 }
 
 func NewWorkDefinition(workType string, payload string) *workDefinition {
 	return &workDefinition{
-		id:       uuid.NewString(),
-		workType: workType,
-		payload:  payload,
+		Id:       uuid.NewString(),
+		WorkType: workType,
+		Payload:  payload,
 	}
 }
