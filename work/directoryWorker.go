@@ -5,6 +5,7 @@ import (
 	"fog/common"
 	"fog/db/genericmodels"
 	"fog/services"
+	"fog/work/definition"
 )
 
 type directoryWorker struct {
@@ -27,19 +28,22 @@ func (d *directoryWorker) GetWorkType() string {
 	return "directory"
 }
 
-func (d *directoryWorker) Work(work workDefinition) *responseDefinition {
+func (d *directoryWorker) Work(work definition.Work) *definition.Response {
+	d.logger.Infof("Directory work id %s started", work.Id)
 	var def directoryWorkDefinition
 	err := json.Unmarshal([]byte(work.Payload), &def)
 	if err != nil {
 		d.logger.Errorf("DirectoryWorker error, payload: %s, error:%s", work.Payload, err)
-		return NewResponseDefinition(work, "error", GenerateErrorPayload(err))
+		return definition.NewResponseDefinition(work, "error", definition.GenerateErrorPayload(err))
 	}
 
 	err = d.service.Add(&genericmodels.Directory{Path: def.DirPath})
 	if err != nil {
 		d.logger.Errorf("DirectoryWorker error, payload: %s, error:%s", work.Payload, err)
-		return NewResponseDefinition(work, "error", GenerateErrorPayload(err))
+		return definition.NewResponseDefinition(work, "error", definition.GenerateErrorPayload(err))
 	}
 
-	return NewResponseDefinition(work, work.WorkType, work.Payload)
+	response := definition.NewResponseDefinition(work, work.WorkType, work.Payload)
+	d.logger.Infof("Directory work id %s completed", response.Id)
+	return response
 }

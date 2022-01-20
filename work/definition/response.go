@@ -1,4 +1,4 @@
-package work
+package definition
 
 import (
 	"time"
@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type responseDefinition struct {
+type Response struct {
 	Id           string
 	WorkId       string
 	ResponseType string
@@ -14,8 +14,8 @@ type responseDefinition struct {
 	TimeCreated  time.Time
 }
 
-func NewResponseDefinition(workDef workDefinition, responseType string, payload string) *responseDefinition {
-	return &responseDefinition{
+func NewResponseDefinition(workDef Work, responseType string, payload string) *Response {
+	return &Response{
 		Id:           uuid.NewString(),
 		WorkId:       workDef.Id,
 		ResponseType: responseType,
