@@ -21,7 +21,8 @@ type orchestrator struct {
 	connection *amqp.Connection
 	logger     common.Logger
 
-	queues map[string]amqp.Queue
+	channel *amqp.Channel
+	queues  map[string]amqp.Queue
 }
 
 func NewOrchestrator(connection string, logger common.Logger) *orchestrator {
@@ -31,9 +32,17 @@ func NewOrchestrator(connection string, logger common.Logger) *orchestrator {
 			logger.Error("Failed to create orchestrator", err)
 			panic(err)
 		}
+
+		ch, err := conn.Channel()
+		if err != nil {
+			logger.Fatal("Failed creating channel")
+			panic(err)
+		}
+
 		instance = orchestrator{
 			connection: conn,
 			logger:     logger,
+			channel:    ch,
 			queues:     make(map[string]amqp.Queue),
 		}
 	})
@@ -42,6 +51,20 @@ func NewOrchestrator(connection string, logger common.Logger) *orchestrator {
 }
 
 func (o *orchestrator) PublishWork(work *definition.Work) {
+	err := o.channel.Publish("",
+		work.WorkType,
+		false,
+		false,
+		amqp.Publishing{
+			ContentType: "application/json",
+			Body:        []byte(work.Payload),
+		})
+
+	if err != nil {
+		o.logger.Errorf("Error publishing work of type: %s", work.WorkType)
+		return
+	}
+
 	o.logger.Infof("Published work of type: %s", work.WorkType)
 }
 
@@ -57,13 +80,7 @@ func (o *orchestrator) RegisterQueue(name string) {
 		}
 	}
 
-	ch, err := o.connection.Channel()
-	if err != nil {
-		o.logger.Fatal("Failed creating channel")
-		panic(err)
-	}
-
-	q, err := ch.QueueDeclare(
+	q, err := o.channel.QueueDeclare(
 		name,  // name
 		false, // durable
 		false, // delete when unused
