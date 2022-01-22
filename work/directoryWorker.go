@@ -25,7 +25,6 @@ func (d *directoryWorker) GetWorkType() string {
 }
 
 func (d *directoryWorker) Work(work definition.Work) *definition.Response {
-	d.logger.Infof("Directory work id %s started", work.Id)
 	var def definition.DirectoryWorkDefinition
 	err := json.Unmarshal([]byte(work.Payload), &def)
 	if err != nil {
@@ -40,6 +39,6 @@ func (d *directoryWorker) Work(work definition.Work) *definition.Response {
 	}
 
 	response := definition.NewResponseDefinition(work, work.WorkType, work.Payload)
-	d.logger.Infof("Directory work id %s completed", response.Id)
+	d.logger.Infof("Directory work id %s completed", work.Id)
 	return response
 }
