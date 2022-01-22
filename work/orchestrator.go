@@ -21,7 +21,7 @@ type orchestrator struct {
 	logger     common.Logger
 }
 
-func NewOrchestrator(connection string, logger common.Logger) orchestrator {
+func NewOrchestrator(connection string, logger common.Logger) *orchestrator {
 	once.Do(func() {
 		conn, err := amqp.Dial(connection)
 		if err != nil {
@@ -34,5 +34,13 @@ func NewOrchestrator(connection string, logger common.Logger) orchestrator {
 		}
 	})
 
-	return instance
+	return &instance
+}
+
+func (o *orchestrator) PublishWork(work *definition.Work) {
+	o.logger.Infof("Published work of type: %s", work.WorkType)
+}
+
+func (o *orchestrator) StartResponseQeue(comms definition.Communication, response responseQueue) {
+	o.logger.Infof("Started listening for: %s", response.responseType)
 }

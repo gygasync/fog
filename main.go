@@ -12,6 +12,7 @@ import (
 	"fog/tasks/workers"
 	"fog/web"
 	"fog/web/routes"
+	"fog/work"
 	"net/http"
 )
 
@@ -89,7 +90,9 @@ func main() {
 
 	orchestratorRoute := routes.NewOrchestratorRoute(logger, tplEngine, orchestartor)
 
-	dirRoute := routes.NewDirRoute(logger, tplEngine, directoryService)
+	orch := work.NewOrchestrator("amqp://guest:guest@localhost:5672/", logger)
+
+	dirRoute := routes.NewDirRoute(logger, tplEngine, directoryService, orch)
 	dirFiles := routes.NewFilesRoute(logger, tplEngine, fileService, directoryService, exifWorkers)
 	// tagRoute := routes.NewTagRoute(logger, tplEngine, tagService)
 
