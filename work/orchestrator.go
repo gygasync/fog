@@ -14,11 +14,14 @@ var instance orchestrator
 type IOrchestrator interface {
 	PublishWork(work *definition.Work)
 	StartResponseQeue(comms definition.Communication, response responseQueue)
+	RegisterQueue(name string)
 }
 
 type orchestrator struct {
 	connection *amqp.Connection
 	logger     common.Logger
+
+	queues map[string]amqp.Queue
 }
 
 func NewOrchestrator(connection string, logger common.Logger) *orchestrator {
@@ -31,6 +34,7 @@ func NewOrchestrator(connection string, logger common.Logger) *orchestrator {
 		instance = orchestrator{
 			connection: conn,
 			logger:     logger,
+			queues:     make(map[string]amqp.Queue),
 		}
 	})
 
@@ -43,4 +47,35 @@ func (o *orchestrator) PublishWork(work *definition.Work) {
 
 func (o *orchestrator) StartResponseQeue(comms definition.Communication, response responseQueue) {
 	o.logger.Infof("Started listening for: %s", response.responseType)
+}
+
+func (o *orchestrator) RegisterQueue(name string) {
+	for item := range o.queues {
+		if item == name {
+			o.logger.Warnf("Queue: %s is already registered.", name)
+			return
+		}
+	}
+
+	ch, err := o.connection.Channel()
+	if err != nil {
+		o.logger.Fatal("Failed creating channel")
+		panic(err)
+	}
+
+	q, err := ch.QueueDeclare(
+		name,  // name
+		false, // durable
+		false, // delete when unused
+		false, // exclusive
+		false, // no-wait
+		nil,   // arguments
+	)
+	if err != nil {
+		o.logger.Fatalf("Failed creating queue: %s", name)
+		panic(err)
+	}
+
+	o.queues[name] = q
+	o.logger.Infof("Queue: %s successfully created", name)
 }

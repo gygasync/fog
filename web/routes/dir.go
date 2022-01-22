@@ -14,21 +14,21 @@ import (
 )
 
 type DirRoute struct {
-	logger       common.Logger
-	tplEngine    TplEngine
-	service      services.IDirectoryService
-	orchestrator work.IOrchestrator
+	logger             common.Logger
+	tplEngine          TplEngine
+	service            services.IDirectoryService
+	directoryWorkQueue work.IWorkQueue
 
 	internalTplEngine *template.Template
 }
 
-func NewDirRoute(logger common.Logger, tplEngine TplEngine, service services.IDirectoryService, orchestrator work.IOrchestrator) *DirRoute {
+func NewDirRoute(logger common.Logger, tplEngine TplEngine, service services.IDirectoryService, directoryWorkQueue work.IWorkQueue) *DirRoute {
 	return &DirRoute{
-		logger:            logger,
-		tplEngine:         tplEngine,
-		service:           service,
-		orchestrator:      orchestrator,
-		internalTplEngine: template.Must(template.ParseFiles("./web/static/templates/directoryList.template.html"))}
+		logger:             logger,
+		tplEngine:          tplEngine,
+		service:            service,
+		directoryWorkQueue: directoryWorkQueue,
+		internalTplEngine:  template.Must(template.ParseFiles("./web/static/templates/directoryList.template.html"))}
 }
 
 func (i *DirRoute) generateComponent(dirs []*genericmodels.Directory) string {
@@ -51,7 +51,7 @@ func (i *DirRoute) HandlePost(w http.ResponseWriter, r *http.Request, _ httprout
 	path := r.FormValue("path")
 	if path != "" {
 		work := definition.NewDirectoryWork(path)
-		i.orchestrator.PublishWork(work)
+		i.directoryWorkQueue.PostTask(work)
 		http.Redirect(w, r, "dir", http.StatusFound)
 	}
 }
