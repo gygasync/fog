@@ -99,8 +99,7 @@ func (o *orchestrator) StartWorker(worker IWorker) {
 			}
 			o.logger.Infof("Start work | type: %s id: %s", worker.GetWorkType(), workDefinition.Id)
 			response := worker.Work(workDefinition)
-			elapsed := response.TimeCreated.Sub(workDefinition.TimeCreated).Milliseconds()
-			o.logger.Infof("End work | type: %s id: %s | Time elapsed: %d ms", worker.GetWorkType(), workDefinition.Id, elapsed)
+			o.logger.Infof("End work | type: %s id: %s | Time elapsed: %s", worker.GetWorkType(), workDefinition.Id, response.TimeCreated.Sub(workDefinition.TimeCreated))
 		}
 	}()
 
