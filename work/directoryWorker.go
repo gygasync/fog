@@ -13,10 +13,6 @@ type directoryWorker struct {
 	service services.IDirectoryService
 }
 
-type directoryWorkDefinition struct {
-	DirPath string
-}
-
 func NewDirectoryWorker(logger common.Logger, service services.IDirectoryService) *directoryWorker {
 	return &directoryWorker{
 		logger:  logger,
@@ -30,7 +26,7 @@ func (d *directoryWorker) GetWorkType() string {
 
 func (d *directoryWorker) Work(work definition.Work) *definition.Response {
 	d.logger.Infof("Directory work id %s started", work.Id)
-	var def directoryWorkDefinition
+	var def definition.DirectoryWorkDefinition
 	err := json.Unmarshal([]byte(work.Payload), &def)
 	if err != nil {
 		d.logger.Errorf("DirectoryWorker error, payload: %s, error:%s", work.Payload, err)

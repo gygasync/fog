@@ -5,6 +5,8 @@ import (
 	"fog/common"
 	"fog/db/genericmodels"
 	"fog/services"
+	"fog/work"
+	"fog/work/definition"
 	"html/template"
 	"net/http"
 
@@ -12,18 +14,20 @@ import (
 )
 
 type DirRoute struct {
-	logger    common.Logger
-	tplEngine TplEngine
-	service   services.IDirectoryService
+	logger       common.Logger
+	tplEngine    TplEngine
+	service      services.IDirectoryService
+	orchestrator work.IOrchestrator
 
 	internalTplEngine *template.Template
 }
 
-func NewDirRoute(logger common.Logger, tplEngine TplEngine, service services.IDirectoryService) *DirRoute {
+func NewDirRoute(logger common.Logger, tplEngine TplEngine, service services.IDirectoryService, orchestrator work.IOrchestrator) *DirRoute {
 	return &DirRoute{
 		logger:            logger,
 		tplEngine:         tplEngine,
 		service:           service,
+		orchestrator:      orchestrator,
 		internalTplEngine: template.Must(template.ParseFiles("./web/static/templates/directoryList.template.html"))}
 }
 
@@ -46,7 +50,8 @@ func (i *DirRoute) HandleGet(w http.ResponseWriter, r *http.Request, _ httproute
 func (i *DirRoute) HandlePost(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	path := r.FormValue("path")
 	if path != "" {
-		i.service.Add(&genericmodels.Directory{Path: path})
+		work := definition.NewDirectoryWork(path)
+		i.orchestrator.PublishWork(work)
 		http.Redirect(w, r, "dir", http.StatusFound)
 	}
 }

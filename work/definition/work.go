@@ -14,7 +14,7 @@ type Work struct {
 	TimeCreated time.Time
 }
 
-func NewWorkDefinition(workType string, payload *interface{}) *Work {
+func NewWorkDefinition(workType string, payload interface{}) *Work {
 	msg, err := json.Marshal(payload)
 	if err != nil {
 		panic(err)
