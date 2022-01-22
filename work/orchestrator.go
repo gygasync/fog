@@ -1,10 +1,12 @@
 package work
 
 import (
+	"encoding/json"
 	"fog/common"
 	"fog/work/definition"
 	"sync"
 
+	"github.com/google/uuid"
 	"github.com/streadway/amqp"
 )
 
@@ -13,7 +15,7 @@ var instance orchestrator
 
 type IOrchestrator interface {
 	PublishWork(work *definition.Work)
-	StartResponseQeue(comms definition.Communication, response responseQueue)
+	StartWorker(worker IWorker)
 	RegisterQueue(name string)
 }
 
@@ -68,8 +70,39 @@ func (o *orchestrator) PublishWork(work *definition.Work) {
 	o.logger.Infof("Published work of type: %s", work.WorkType)
 }
 
-func (o *orchestrator) StartResponseQeue(comms definition.Communication, response responseQueue) {
-	o.logger.Infof("Started listening for: %s", response.responseType)
+func (o *orchestrator) StartWorker(worker IWorker) {
+	msgs, err := o.channel.Consume(
+		worker.GetWorkType(),
+		uuid.NewString(),
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		o.logger.Fatalf("Failed to consume queue: %s", worker.GetWorkType())
+		panic(err)
+	}
+	o.logger.Infof("Started worker for: %s", worker.GetWorkType())
+
+	forever := make(chan bool)
+
+	go func() {
+		for m := range msgs {
+			msg := m.Body
+			var workDefinition definition.Work
+			err = json.Unmarshal(msg, &workDefinition)
+			if err != nil {
+				o.logger.Errorf("Error parsing work type: %s", worker.GetWorkType())
+				return
+			}
+			worker.Work(workDefinition)
+		}
+	}()
+
+	<-forever
+
 }
 
 func (o *orchestrator) RegisterQueue(name string) {

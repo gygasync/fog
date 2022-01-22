@@ -92,9 +92,11 @@ func main() {
 
 	orch := work.NewOrchestrator("amqp://guest:guest@localhost:5672/", logger)
 	directoryWorkQueue := work.NewWorkQueue("directory", orch)
-
+	dirWorker := work.NewDirectoryWorker(logger, directoryService)
+	go orch.StartWorker(dirWorker)
 	dirRoute := routes.NewDirRoute(logger, tplEngine, directoryService, directoryWorkQueue)
 	dirFiles := routes.NewFilesRoute(logger, tplEngine, fileService, directoryService, exifWorkers)
+
 	// tagRoute := routes.NewTagRoute(logger, tplEngine, tagService)
 
 	router.RegisterRoute("/", web.GET, indexRoute)
