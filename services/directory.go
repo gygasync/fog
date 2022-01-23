@@ -135,6 +135,7 @@ func (s *DirectoryService) GetChildren(id string) (*viewmodels.FilesInDirs, erro
 	result.Files = files
 	result.Dirs = dirs
 	result.ParentDirectoryId = deref.ParentDirectory.String
+	result.BasePath = deref.Path
 
 	return &result, nil
 }

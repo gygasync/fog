@@ -47,10 +47,8 @@ func (s *FileService) Add(file *genericmodels.File) error {
 		return fmt.Errorf("file %s is not valid", file.Path)
 	}
 
-	file.Path, err = filepath.Abs(file.Path)
-	if err != nil {
-		return err
-	}
+	fullPath, _ := filepath.Abs(file.Path)
+	file.Path = filepath.Base(file.Path)
 
 	_, err = s.repository.FindOne("Path", file.Path)
 
@@ -64,7 +62,7 @@ func (s *FileService) Add(file *genericmodels.File) error {
 	}
 
 	// Do a mime type check
-	file.MimeType = s.getMimeType(file)
+	file.MimeType = s.getMimeType(fullPath)
 	file.Id = fmt.Sprintf("0x%x", [16]byte(uuid.New()))
 
 	_, err = s.repository.Add(file)
@@ -103,8 +101,8 @@ func nullstr() sql.NullString {
 	return sql.NullString{String: "", Valid: false}
 }
 
-func (s *FileService) getMimeType(file *genericmodels.File) sql.NullString {
-	buf, err := ioutil.ReadFile(file.Path)
+func (s *FileService) getMimeType(filePath string) sql.NullString {
+	buf, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return nullstr()
 	}
